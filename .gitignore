@@ -1,0 +1,59 @@
+# =========================
+# Dependencias
+# =========================
+node_modules/
+
+# =========================
+# Variables de entorno
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# TypeScript / compilación
+# =========================
+dist/
+build/
+*.tsbuildinfo
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# Archivos temporales
+# =========================
+tmp/
+temp/
+.cache/
+
+# =========================
+# Sistema operativo
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# IDE / Editores
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# Cobertura / testing
+# =========================
+coverage/
+
+# =========================
+# Archivos generados por Jison
+# =========================
+Backend/analizador/parser.js
+Backend/analizador/parser.js.map
