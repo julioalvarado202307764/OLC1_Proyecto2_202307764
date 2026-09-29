@@ -2,27 +2,47 @@ const moduloGenerado = require("./analizador.js");
 
 const parser = moduloGenerado.parser ?? moduloGenerado;
 
-const codigo = `{
-    for (int i = 0; i < 5; i = i + 1) {
-        if (i == 1) {
-            continue;
-        }
+const codigo = `string[] packages = ["docker", "git", "nginx"];
 
-        if (i == 3) {
-            break;
-        }
+database postgres {
+    engine = "postgresql";
+    version = "16";
+    port = 5432;
+}
 
-        print(i);
+server backend {
+    cpu = 4;
+    memory = 16;
+    disk = 100;
+    os = "ubuntu";
+}
+
+service api {
+    port = 8080;
+    replicas = 2;
+    dependsOn = [postgres];
+}
+
+function canDeploy(server s, int minMemory) bool {
+    return s.memory >= minMemory;
+}
+
+task deployProduction {
+    start(postgres);
+    start(backend);
+
+    if (canDeploy(backend, 8)) {
+        install(backend, packages[0]);
+        deploy(backend, api);
+        start(api);
+    } else {
+        print("Not enough memory");
     }
+}
 
-    return 42;
+main {
+    run deployProduction;
 }`;
-
-parser.yy = {
-    tokens: [],
-    erroresLexicos: [],
-    inicioComentario: null
-};
 
 const ast = parser.parse(codigo);
 

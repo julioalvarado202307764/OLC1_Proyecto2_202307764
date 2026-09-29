@@ -719,9 +719,331 @@ id_continue     [A-Za-z0-9_]
    ========================================================= */
 
 inicio
-    : block
+    : program
         {
             return $1;
+        }
+    ;
+
+/* =========================================================
+   PROGRAMA COMPLETO
+   ========================================================= */
+
+program
+    : global_declaration_list main_declaration
+        {
+            $$ = {
+                type: "Program",
+                declarations: $1,
+                main: $2
+            };
+        }
+    ;
+
+
+global_declaration_list
+    : /* vacío */
+        {
+            $$ = [];
+        }
+
+    | global_declaration_list global_declaration
+        {
+            $1.push($2);
+            $$ = $1;
+        }
+    ;
+
+
+global_declaration
+    : primitive_global_variable_declaration
+        {
+            $$ = $1;
+        }
+
+    | SERVER resource_global_tail
+        {
+            if ($2.kind === "resource") {
+                $$ = {
+                    type: "ResourceDeclaration",
+                    resourceType: "server",
+                    name: $2.name,
+                    properties: $2.properties
+                };
+            } else {
+                $$ = {
+                    type: "VariableDeclaration",
+                    variableType: {
+                        name: "server",
+                        isArray: $2.isArray
+                    },
+                    name: $2.name,
+                    initializer: $2.initializer
+                };
+            }
+        }
+
+    | SERVICE resource_global_tail
+        {
+            if ($2.kind === "resource") {
+                $$ = {
+                    type: "ResourceDeclaration",
+                    resourceType: "service",
+                    name: $2.name,
+                    properties: $2.properties
+                };
+            } else {
+                $$ = {
+                    type: "VariableDeclaration",
+                    variableType: {
+                        name: "service",
+                        isArray: $2.isArray
+                    },
+                    name: $2.name,
+                    initializer: $2.initializer
+                };
+            }
+        }
+
+    | DATABASE resource_global_tail
+        {
+            if ($2.kind === "resource") {
+                $$ = {
+                    type: "ResourceDeclaration",
+                    resourceType: "database",
+                    name: $2.name,
+                    properties: $2.properties
+                };
+            } else {
+                $$ = {
+                    type: "VariableDeclaration",
+                    variableType: {
+                        name: "database",
+                        isArray: $2.isArray
+                    },
+                    name: $2.name,
+                    initializer: $2.initializer
+                };
+            }
+        }
+
+    | function_declaration
+        {
+            $$ = $1;
+        }
+
+    | task_declaration
+        {
+            $$ = $1;
+        }
+    ;
+
+/* =========================================================
+   VARIABLES GLOBALES PRIMITIVAS
+   ========================================================= */
+
+primitive_global_variable_declaration
+    : primitive_type_specifier IDENTIFIER ASSIGN expression SEMICOLON
+        {
+            $$ = {
+                type: "VariableDeclaration",
+                variableType: $1,
+                name: $2,
+                initializer: $4
+            };
+        }
+    ;
+
+
+primitive_type_specifier
+    : primitive_base_type
+        {
+            $$ = {
+                name: $1,
+                isArray: false
+            };
+        }
+
+    | primitive_base_type LBRACKET RBRACKET
+        {
+            $$ = {
+                name: $1,
+                isArray: true
+            };
+        }
+    ;
+
+
+primitive_base_type
+    : INT
+        {
+            $$ = "int";
+        }
+
+    | FLOAT
+        {
+            $$ = "float";
+        }
+
+    | STRING
+        {
+            $$ = "string";
+        }
+
+    | BOOL
+        {
+            $$ = "bool";
+        }
+    ;
+/* =========================================================
+   RECURSOS
+   ========================================================= */
+/* =========================================================
+   RECURSOS O VARIABLES DE TIPO RECURSO A NIVEL GLOBAL
+   ========================================================= */
+
+resource_global_tail
+    : IDENTIFIER LBRACE resource_property_list RBRACE
+        {
+            $$ = {
+                kind: "resource",
+                name: $1,
+                properties: $3
+            };
+        }
+
+    | IDENTIFIER ASSIGN expression SEMICOLON
+        {
+            $$ = {
+                kind: "variable",
+                name: $1,
+                isArray: false,
+                initializer: $3
+            };
+        }
+
+    | LBRACKET RBRACKET IDENTIFIER ASSIGN expression SEMICOLON
+        {
+            $$ = {
+                kind: "variable",
+                name: $3,
+                isArray: true,
+                initializer: $5
+            };
+        }
+    ;
+
+resource_property_list
+    : /* vacío */
+        {
+            $$ = [];
+        }
+
+    | resource_property_list resource_property
+        {
+            $1.push($2);
+            $$ = $1;
+        }
+    ;
+
+
+resource_property
+    : IDENTIFIER ASSIGN expression SEMICOLON
+        {
+            $$ = {
+                type: "ResourceProperty",
+                name: $1,
+                value: $3
+            };
+        }
+    ;
+
+/* =========================================================
+   FUNCIONES
+   ========================================================= */
+
+function_declaration
+    : FUNCTION IDENTIFIER
+      LPAREN parameter_list_optional RPAREN
+      type_specifier
+      block
+        {
+            $$ = {
+                type: "FunctionDeclaration",
+                name: $2,
+                parameters: $4,
+                returnType: $6,
+                body: $7
+            };
+        }
+    ;
+
+
+parameter_list_optional
+    : /* vacío */
+        {
+            $$ = [];
+        }
+
+    | parameter_list
+        {
+            $$ = $1;
+        }
+    ;
+
+
+parameter_list
+    : parameter
+        {
+            $$ = [$1];
+        }
+
+    | parameter_list COMMA parameter
+        {
+            $1.push($3);
+            $$ = $1;
+        }
+    ;
+
+
+parameter
+    : type_specifier IDENTIFIER
+        {
+            $$ = {
+                type: "Parameter",
+                parameterType: $1,
+                name: $2
+            };
+        }
+    ;
+
+/* =========================================================
+   TASK
+   ========================================================= */
+
+task_declaration
+    : TASK IDENTIFIER block
+        {
+            $$ = {
+                type: "TaskDeclaration",
+                name: $2,
+                body: $3
+            };
+        }
+    ;
+
+
+/* =========================================================
+   MAIN
+   ========================================================= */
+
+main_declaration
+    : MAIN block
+        {
+            $$ = {
+                type: "MainDeclaration",
+                body: $2
+            };
         }
     ;
 /* =========================================================
@@ -855,6 +1177,25 @@ statement
     | return_statement
         {
             $$ = $1;
+        }
+
+    | run_statement
+        {
+            $$ = $1;
+        }
+    ;
+
+/* =========================================================
+   RUN
+   ========================================================= */
+
+run_statement
+    : RUN IDENTIFIER SEMICOLON
+        {
+            $$ = {
+                type: "RunInstruction",
+                taskName: $2
+            };
         }
     ;
 /* =========================================================
