@@ -719,9 +719,330 @@ id_continue     [A-Za-z0-9_]
    ========================================================= */
 
 inicio
-    : expression
+    : block
         {
             return $1;
+        }
+    ;
+/* =========================================================
+   TIPOS
+   ========================================================= */
+
+type_specifier
+    : base_type
+        {
+            $$ = {
+                name: $1,
+                isArray: false
+            };
+        }
+
+    | base_type LBRACKET RBRACKET
+        {
+            $$ = {
+                name: $1,
+                isArray: true
+            };
+        }
+    ;
+
+
+base_type
+    : INT
+        {
+            $$ = "int";
+        }
+
+    | FLOAT
+        {
+            $$ = "float";
+        }
+
+    | STRING
+        {
+            $$ = "string";
+        }
+
+    | BOOL
+        {
+            $$ = "bool";
+        }
+
+    | SERVER
+        {
+            $$ = "server";
+        }
+
+    | SERVICE
+        {
+            $$ = "service";
+        }
+
+    | DATABASE
+        {
+            $$ = "database";
+        }
+    ;
+
+/* =========================================================
+   BLOQUES
+   ========================================================= */
+
+block
+    : LBRACE statement_list RBRACE
+        {
+            $$ = {
+                type: "Block",
+                statements: $2
+            };
+        }
+    ;
+
+
+statement_list
+    : /* vacío */
+        {
+            $$ = [];
+        }
+
+    | statement_list statement
+        {
+            $1.push($2);
+            $$ = $1;
+        }
+    ;
+
+/* =========================================================
+   INSTRUCCIONES BÁSICAS
+   ========================================================= */
+
+statement
+    : variable_declaration
+        {
+            $$ = $1;
+        }
+
+    | simple_statement
+        {
+            $$ = $1;
+        }
+
+    | if_statement
+        {
+            $$ = $1;
+        }
+
+    | while_statement
+        {
+            $$ = $1;
+        }
+
+    | for_statement
+        {
+            $$ = $1;
+        }
+
+    | break_statement
+        {
+            $$ = $1;
+        }
+
+    | continue_statement
+        {
+            $$ = $1;
+        }
+
+    | return_statement
+        {
+            $$ = $1;
+        }
+    ;
+/* =========================================================
+   IF / ELSE
+   ========================================================= */
+
+if_statement
+    : IF LPAREN expression RPAREN block
+        {
+            $$ = {
+                type: "IfInstruction",
+                condition: $3,
+                thenBranch: $5,
+                elseBranch: null
+            };
+        }
+
+    | IF LPAREN expression RPAREN block ELSE block
+        {
+            $$ = {
+                type: "IfInstruction",
+                condition: $3,
+                thenBranch: $5,
+                elseBranch: $7
+            };
+        }
+
+    | IF LPAREN expression RPAREN block ELSE if_statement
+        {
+            $$ = {
+                type: "IfInstruction",
+                condition: $3,
+                thenBranch: $5,
+                elseBranch: $7
+            };
+        }
+    ;
+
+/* =========================================================
+   WHILE
+   ========================================================= */
+
+while_statement
+    : WHILE LPAREN expression RPAREN block
+        {
+            $$ = {
+                type: "WhileInstruction",
+                condition: $3,
+                body: $5
+            };
+        }
+    ;
+
+/* =========================================================
+   ASIGNACIONES Y EXPRESIONES COMO INSTRUCCIÓN
+   ========================================================= */
+
+simple_statement
+    : expression SEMICOLON
+        {
+            /*
+             * Por ahora las expresiones utilizadas como statement
+             * corresponden a llamadas.
+             */
+            if ($1.type !== "CallExpression") {
+                throw new Error(
+                    "Solo una llamada puede utilizarse como expresión independiente."
+                );
+            }
+
+            $$ = {
+                type: "ExpressionStatement",
+                expression: $1
+            };
+        }
+
+    | assignment_core SEMICOLON
+        {
+            $$ = $1;
+        }
+    ;
+
+
+assignment_core
+    : expression ASSIGN expression
+        {
+            /*
+             * Validación exclusivamente de FORMA sintáctica.
+             * No comprueba tipos, ámbitos, propiedades existentes
+             * ni propiedades de solo lectura.
+             */
+            if (
+                $1.type !== "IdentifierExpression" &&
+                $1.type !== "PropertyAccessExpression" &&
+                $1.type !== "IndexExpression"
+            ) {
+                throw new Error(
+                    "Objetivo de asignación sintácticamente inválido."
+                );
+            }
+
+            $$ = {
+                type: "Assignment",
+                target: $1,
+                value: $3
+            };
+        }
+    ;
+
+/* =========================================================
+   FOR
+   ========================================================= */
+
+for_statement
+    : FOR LPAREN
+      variable_declaration_core SEMICOLON
+      expression SEMICOLON
+      assignment_core
+      RPAREN block
+        {
+            $$ = {
+                type: "ForInstruction",
+                initializer: $3,
+                condition: $5,
+                update: $7,
+                body: $9
+            };
+        }
+    ;
+
+/* =========================================================
+   BREAK / CONTINUE
+   ========================================================= */
+
+break_statement
+    : BREAK SEMICOLON
+        {
+            $$ = {
+                type: "BreakInstruction"
+            };
+        }
+    ;
+
+
+continue_statement
+    : CONTINUE SEMICOLON
+        {
+            $$ = {
+                type: "ContinueInstruction"
+            };
+        }
+    ;
+
+/* =========================================================
+   RETURN
+   ========================================================= */
+
+return_statement
+    : RETURN expression SEMICOLON
+        {
+            $$ = {
+                type: "ReturnInstruction",
+                value: $2
+            };
+        }
+    ;
+
+/* =========================================================
+   DECLARACIÓN DE VARIABLES
+   ========================================================= */
+
+variable_declaration
+    : variable_declaration_core SEMICOLON
+        {
+            $$ = $1;
+        }
+    ;
+
+
+variable_declaration_core
+    : type_specifier IDENTIFIER ASSIGN expression
+        {
+            $$ = {
+                type: "VariableDeclaration",
+                variableType: $1,
+                name: $2,
+                initializer: $4
+            };
         }
     ;
 
@@ -1117,7 +1438,7 @@ primary
             $$ = $2;
         }
 
-    | LBRACKET argument_list_optional RBRACKET
+    | LBRACKET argument_list RBRACKET
         {
             $$ = {
                 type: "ArrayExpression",
