@@ -3,11 +3,19 @@ const moduloGenerado = require("./analizador.js");
 const parser = moduloGenerado.parser ?? moduloGenerado;
 
 const codigo = `{
-    if (backend.memory >= 8 && activo) {
-        start(backend);
-    } else {
-        stop(backend);
+    for (int i = 0; i < 5; i = i + 1) {
+        if (i == 1) {
+            continue;
+        }
+
+        if (i == 3) {
+            break;
+        }
+
+        print(i);
     }
+
+    return 42;
 }`;
 
 parser.yy = {
