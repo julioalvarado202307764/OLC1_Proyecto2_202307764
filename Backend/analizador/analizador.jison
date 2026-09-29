@@ -73,7 +73,7 @@ id_continue     [A-Za-z0-9_]
     yy.inicioComentario = null;
     this.begin("INITIAL");
 
-    return "EOF";
+    return 1;
 }
 
 
@@ -665,7 +665,7 @@ id_continue     [A-Za-z0-9_]
    ========================================================= */
 
 <<EOF>> {
-    return "EOF";
+    return 1;
 }
 
 
@@ -701,22 +701,462 @@ id_continue     [A-Za-z0-9_]
 
 /* =========================================================
    GRAMÁTICA TEMPORAL
-   =========================================================
-
-   Esta NO es la gramática del proyecto.
-
-   Jison necesita una sección sintáctica para generar el
-   archivo JavaScript, así que dejamos únicamente una regla
-   vacía temporal.
-
-   En una fase posterior será reemplazada por la gramática
-   real de AutoInfra.
    ========================================================= */
 
 %start inicio
 
 %%
 
+
+/* =========================================================
+   INICIO TEMPORAL DE LA FASE 2
+   =========================================================
+
+   Por ahora el parser acepta únicamente UNA expresión.
+
+   Esto es intencional:
+   todavía NO estamos implementando el programa completo.
+   ========================================================= */
+
 inicio
+    : expression
+        {
+            return $1;
+        }
+    ;
+
+
+/* =========================================================
+   EXPRESIONES
+   ========================================================= */
+
+expression
+    : logical_or
+        {
+            $$ = $1;
+        }
+    ;
+
+
+/* ---------------------------------------------------------
+   ||
+   Menor precedencia
+   --------------------------------------------------------- */
+
+logical_or
+    : logical_and
+        {
+            $$ = $1;
+        }
+
+    | logical_or OR logical_and
+        {
+            $$ = {
+                type: "BinaryExpression",
+                operator: "||",
+                left: $1,
+                right: $3
+            };
+        }
+    ;
+
+
+/* ---------------------------------------------------------
+   &&
+   --------------------------------------------------------- */
+
+logical_and
+    : equality
+        {
+            $$ = $1;
+        }
+
+    | logical_and AND equality
+        {
+            $$ = {
+                type: "BinaryExpression",
+                operator: "&&",
+                left: $1,
+                right: $3
+            };
+        }
+    ;
+
+
+/* ---------------------------------------------------------
+   == !=
+   --------------------------------------------------------- */
+
+equality
+    : comparison
+        {
+            $$ = $1;
+        }
+
+    | equality EQUAL comparison
+        {
+            $$ = {
+                type: "BinaryExpression",
+                operator: "==",
+                left: $1,
+                right: $3
+            };
+        }
+
+    | equality NOT_EQUAL comparison
+        {
+            $$ = {
+                type: "BinaryExpression",
+                operator: "!=",
+                left: $1,
+                right: $3
+            };
+        }
+    ;
+
+
+/* ---------------------------------------------------------
+   < <= > >=
+   --------------------------------------------------------- */
+
+comparison
+    : term
+        {
+            $$ = $1;
+        }
+
+    | comparison LESS term
+        {
+            $$ = {
+                type: "BinaryExpression",
+                operator: "<",
+                left: $1,
+                right: $3
+            };
+        }
+
+    | comparison LESS_EQUAL term
+        {
+            $$ = {
+                type: "BinaryExpression",
+                operator: "<=",
+                left: $1,
+                right: $3
+            };
+        }
+
+    | comparison GREATER term
+        {
+            $$ = {
+                type: "BinaryExpression",
+                operator: ">",
+                left: $1,
+                right: $3
+            };
+        }
+
+    | comparison GREATER_EQUAL term
+        {
+            $$ = {
+                type: "BinaryExpression",
+                operator: ">=",
+                left: $1,
+                right: $3
+            };
+        }
+    ;
+
+
+/* ---------------------------------------------------------
+   + -
+   --------------------------------------------------------- */
+
+term
+    : factor
+        {
+            $$ = $1;
+        }
+
+    | term PLUS factor
+        {
+            $$ = {
+                type: "BinaryExpression",
+                operator: "+",
+                left: $1,
+                right: $3
+            };
+        }
+
+    | term MINUS factor
+        {
+            $$ = {
+                type: "BinaryExpression",
+                operator: "-",
+                left: $1,
+                right: $3
+            };
+        }
+    ;
+
+
+/* ---------------------------------------------------------
+   * / %
+   --------------------------------------------------------- */
+
+factor
+    : unary
+        {
+            $$ = $1;
+        }
+
+    | factor MULTIPLY unary
+        {
+            $$ = {
+                type: "BinaryExpression",
+                operator: "*",
+                left: $1,
+                right: $3
+            };
+        }
+
+    | factor DIVIDE unary
+        {
+            $$ = {
+                type: "BinaryExpression",
+                operator: "/",
+                left: $1,
+                right: $3
+            };
+        }
+
+    | factor MODULO unary
+        {
+            $$ = {
+                type: "BinaryExpression",
+                operator: "%",
+                left: $1,
+                right: $3
+            };
+        }
+    ;
+
+
+/* ---------------------------------------------------------
+   ! y - unario
+
+   La recursión a la derecha permite expresiones como:
+
+   !!activo
+   --numero
+   !-x
+   --------------------------------------------------------- */
+
+unary
+    : NOT unary
+        {
+            $$ = {
+                type: "UnaryExpression",
+                operator: "!",
+                operand: $2
+            };
+        }
+
+    | MINUS unary
+        {
+            $$ = {
+                type: "UnaryExpression",
+                operator: "-",
+                operand: $2
+            };
+        }
+
+    | postfix
+        {
+            $$ = $1;
+        }
+    ;
+
+
+/* =========================================================
+   POSTFIX
+
+   Permite encadenar:
+
+   funcion(...)
+   objeto.propiedad
+   arreglo[indice]
+
+   Incluso combinaciones:
+
+   foo(a)[0].status
+   ========================================================= */
+
+postfix
+    : primary
+        {
+            $$ = $1;
+        }
+
+    | postfix LPAREN argument_list_optional RPAREN
+        {
+            $$ = {
+                type: "CallExpression",
+                callee: $1,
+                arguments: $3
+            };
+        }
+
+    | postfix DOT IDENTIFIER
+        {
+            $$ = {
+                type: "PropertyAccessExpression",
+                object: $1,
+                property: $3
+            };
+        }
+
+    | postfix LBRACKET expression RBRACKET
+        {
+            $$ = {
+                type: "IndexExpression",
+                object: $1,
+                index: $3
+            };
+        }
+    ;
+
+
+/* =========================================================
+   PRIMARIAS
+   ========================================================= */
+
+primary
+    : INTEGER_LITERAL
+        {
+            $$ = {
+                type: "LiteralExpression",
+                literalType: "int",
+                value: Number($1),
+                raw: $1
+            };
+        }
+
+    | DECIMAL_LITERAL
+        {
+            $$ = {
+                type: "LiteralExpression",
+                literalType: "float",
+                value: Number($1),
+                raw: $1
+            };
+        }
+
+    | STRING_LITERAL
+        {
+            var raw = $1;
+
+            var valor = raw
+                .substring(1, raw.length - 1)
+                .replace(/\\(["\\nt])/g, function(coincidencia, escape) {
+                    switch (escape) {
+                        case "\"":
+                            return "\"";
+
+                        case "\\":
+                            return "\\";
+
+                        case "n":
+                            return "\n";
+
+                        case "t":
+                            return "\t";
+
+                        default:
+                            return coincidencia;
+                    }
+                });
+
+            $$ = {
+                type: "LiteralExpression",
+                literalType: "string",
+                value: valor,
+                raw: raw
+            };
+        }
+
+    | TRUE
+        {
+            $$ = {
+                type: "LiteralExpression",
+                literalType: "bool",
+                value: true,
+                raw: $1
+            };
+        }
+
+    | FALSE
+        {
+            $$ = {
+                type: "LiteralExpression",
+                literalType: "bool",
+                value: false,
+                raw: $1
+            };
+        }
+
+    | IDENTIFIER
+        {
+            $$ = {
+                type: "IdentifierExpression",
+                name: $1
+            };
+        }
+
+    | LPAREN expression RPAREN
+        {
+            $$ = $2;
+        }
+
+    | LBRACKET argument_list_optional RBRACKET
+        {
+            $$ = {
+                type: "ArrayExpression",
+                elements: $2
+            };
+        }
+    ;
+
+
+/* =========================================================
+   LISTAS DE EXPRESIONES
+
+   Se reutilizan temporalmente para:
+   - argumentos de llamadas
+   - elementos de arreglos
+   ========================================================= */
+
+argument_list_optional
     : /* vacío */
+        {
+            $$ = [];
+        }
+
+    | argument_list
+        {
+            $$ = $1;
+        }
+    ;
+
+
+argument_list
+    : expression
+        {
+            $$ = [$1];
+        }
+
+    | argument_list COMMA expression
+        {
+            $1.push($3);
+            $$ = $1;
+        }
     ;
