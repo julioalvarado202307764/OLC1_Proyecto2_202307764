@@ -1,20 +1,64 @@
 import { analizarCodigo } from "./parser";
 
-const codigo = `int brokenA = 10
+const codigo = `string[] packages = ["docker", "git", "nginx"];
+
+database postgres {
+    engine = "postgresql";
+    version = "16";
+    port = 5432;
+}
 
 server backend {
     cpu = 4;
     memory = 16;
+    disk = 100;
+    os = "ubuntu";
 }
 
-string brokenB = "production"
+service api {
+    port = 8080;
+    replicas = 2;
+    dependsOn = [postgres];
+}
 
-task validTask {
-    print("task valida");
+function canDeploy(server s, int minMemory) bool {
+    return s.memory >= minMemory;
+}
+
+task deployProduction {
+    int attempts = 0;
+
+    start(postgres);
+    start(backend);
+
+    while (attempts < 2) {
+        print(attempts);
+        attempts = attempts + 1;
+    }
+
+    for (int i = 0; i < 3; i = i + 1) {
+        if (i == 1) {
+            continue;
+        }
+
+        if (i == 2) {
+            break;
+        }
+
+        print(i);
+    }
+
+    if (canDeploy(backend, 8)) {
+        install(backend, packages[0]);
+        deploy(backend, api);
+        start(api);
+    } else {
+        print("Not enough memory");
+    }
 }
 
 main {
-    run validTask;
+    run deployProduction;
 }`;
 
 const resultado = analizarCodigo(codigo);
