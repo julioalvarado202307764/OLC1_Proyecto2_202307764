@@ -1,6 +1,13 @@
-const moduloGenerado = require("./analizador.js");
+import type { Token, ErrorLexico } from "./lexer";
+import type { ProgramNode } from "../models/ast";
 
+const moduloGenerado = require("./analizador.js");
 const parser = moduloGenerado.parser ?? moduloGenerado;
+
+
+/* =========================================================
+   CONTRATO PÚBLICO DEL ANALIZADOR
+   ========================================================= */
 
 export interface ErrorSintactico {
     tipo: "Sintáctico";
@@ -10,24 +17,66 @@ export interface ErrorSintactico {
     columna: number;
 }
 
-export interface ResultadoParser {
-    ast: any | null;
-    tokens: any[];
-    erroresLexicos: any[];
+export interface ResultadoAnalisis {
+    ast: ProgramNode | null;
+    tokens: Token[];
+    erroresLexicos: ErrorLexico[];
     erroresSintacticos: ErrorSintactico[];
 }
 
-export function analizarCodigo(codigo: string): ResultadoParser {
-    const contexto: any = {
+
+/* =========================================================
+   TIPOS INTERNOS PARA JISON
+   ========================================================= */
+
+interface UbicacionJison {
+    first_line?: number;
+    first_column?: number;
+}
+
+interface ErrorJison {
+    text?: string;
+    line?: number;
+    loc?: UbicacionJison;
+    expected?: string[];
+    recoverable?: boolean;
+}
+
+interface ContextoAnalisis {
+    tokens: Token[];
+    erroresLexicos: ErrorLexico[];
+    erroresSintacticos: ErrorSintactico[];
+
+    inicioComentario: unknown;
+
+    registrarErrorSintacticoManual?: (
+        descripcion: string,
+        ubicacion: UbicacionJison
+    ) => void;
+
+    parseError?: (
+        mensaje: string,
+        hash: ErrorJison
+    ) => void;
+}
+
+
+/* =========================================================
+   ANALIZADOR
+   ========================================================= */
+
+export function analizarCodigo(codigo: string): ResultadoAnalisis {
+    const contexto: ContextoAnalisis = {
         tokens: [],
         erroresLexicos: [],
         erroresSintacticos: [],
         inicioComentario: null
     };
 
+
     contexto.registrarErrorSintacticoManual = (
         descripcion: string,
-        ubicacion: any
+        ubicacion: UbicacionJison
     ) => {
         contexto.erroresSintacticos.push({
             tipo: "Sintáctico",
@@ -38,7 +87,11 @@ export function analizarCodigo(codigo: string): ResultadoParser {
         });
     };
 
-    contexto.parseError = (mensaje: string, hash: any) => {
+
+    contexto.parseError = (
+        mensaje: string,
+        hash: ErrorJison
+    ) => {
         const ultimoToken =
             contexto.tokens.length > 0
                 ? contexto.tokens[contexto.tokens.length - 1]
@@ -75,37 +128,46 @@ export function analizarCodigo(codigo: string): ResultadoParser {
         });
 
         /*
-         * Si hay una producción "error" utilizable,
-         * Jison intentará recuperarse automáticamente.
+         * Si Jison dispone de una producción de recuperación,
+         * permitimos que continúe con el análisis.
          */
         if (hash?.recoverable) {
             return;
         }
 
         /*
-         * Solo los errores sintácticos irrecuperables
-         * son capturados después.
+         * Los errores sintácticos irrecuperables también quedan
+         * registrados, pero detienen el parseo.
          */
-        const error = new Error(mensaje);
-        (error as any).esErrorSintactico = true;
+        const error = new Error(mensaje) as Error & {
+            esErrorSintactico?: boolean;
+        };
+
+        error.esErrorSintactico = true;
 
         throw error;
     };
 
+
     parser.yy = contexto;
 
-    let ast: any | null = null;
+    let ast: ProgramNode | null = null;
 
     try {
-        ast = parser.parse(codigo);
-    } catch (error) {
+        ast = parser.parse(codigo) as ProgramNode;
+    } catch (error: unknown) {
+        const errorParser = error as Error & {
+            esErrorSintactico?: boolean;
+        };
+
         /*
-         * Si fue un error sintáctico ya registrado,
-         * devolvemos el resultado parcial/null.
+         * Un error sintáctico irrecuperable ya fue registrado
+         * por parseError.
          *
-         * Si fue un bug real del parser, NO lo ocultamos.
+         * Cualquier otro error representa un problema real del
+         * analizador y no debe ocultarse.
          */
-        if (!(error as any)?.esErrorSintactico) {
+        if (!errorParser?.esErrorSintactico) {
             throw error;
         }
     }

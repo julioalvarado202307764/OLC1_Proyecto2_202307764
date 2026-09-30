@@ -1,73 +1,47 @@
-import { analizarCodigo } from "./parser";
+import {
+    analizarCodigo,
+    ResultadoAnalisis
+} from "./parser";
 
-const codigo = `string[] packages = ["docker", "git", "nginx"];
 
-database postgres {
-    engine = "postgresql";
-    version = "16";
-    port = 5432;
-}
-
-server backend {
-    cpu = 4;
-    memory = 16;
-    disk = 100;
-    os = "ubuntu";
-}
-
-service api {
-    port = 8080;
-    replicas = 2;
-    dependsOn = [postgres];
-}
-
-function canDeploy(server s, int minMemory) bool {
-    return s.memory >= minMemory;
-}
-
-task deployProduction {
-    int attempts = 0;
-
-    start(postgres);
-    start(backend);
-
-    while (attempts < 2) {
-        print(attempts);
-        attempts = attempts + 1;
-    }
-
-    for (int i = 0; i < 3; i = i + 1) {
-        if (i == 1) {
-            continue;
-        }
-
-        if (i == 2) {
-            break;
-        }
-
-        print(i);
-    }
-
-    if (canDeploy(backend, 8)) {
-        install(backend, packages[0]);
-        deploy(backend, api);
-        start(api);
-    } else {
-        print("Not enough memory");
-    }
-}
-
-main {
-    run deployProduction;
+const codigoValido = `main {
+    print("hola");
 }`;
 
-const resultado = analizarCodigo(codigo);
+const resultadoValido: ResultadoAnalisis =
+    analizarCodigo(codigoValido);
 
-console.log("AST:");
-console.log(JSON.stringify(resultado.ast, null, 2));
+console.log("=== CÓDIGO VÁLIDO ===");
 
-console.log("\nERRORES SINTÁCTICOS:");
-console.log(JSON.stringify(resultado.erroresSintacticos, null, 2));
+console.log("AST:", resultadoValido.ast?.type);
+console.log("Tokens:", resultadoValido.tokens.length);
+console.log(
+    "Errores léxicos:",
+    resultadoValido.erroresLexicos.length
+);
+console.log(
+    "Errores sintácticos:",
+    resultadoValido.erroresSintacticos.length
+);
 
-console.log("\nERRORES LÉXICOS:");
-console.log(JSON.stringify(resultado.erroresLexicos, null, 2));
+
+const codigoConError = `main {
+    int x = ;
+    print("continua");
+}`;
+
+const resultadoConError: ResultadoAnalisis =
+    analizarCodigo(codigoConError);
+
+console.log("\n=== CÓDIGO CON ERROR ===");
+
+console.log("AST:", resultadoConError.ast?.type);
+console.log("Tokens:", resultadoConError.tokens.length);
+console.log(
+    "Errores léxicos:",
+    resultadoConError.erroresLexicos.length
+);
+console.log(
+    "Errores sintácticos:",
+    resultadoConError.erroresSintacticos.length
+);
