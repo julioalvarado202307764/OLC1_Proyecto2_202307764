@@ -1,151 +1,140 @@
-import { analizarCodigo } from "../analizador/parser";
+import {
+    analizarCodigo
+} from "../analizador/parser";
 
 import {
-    generarReporteAST
-} from "./ast.report";
-
-import {
-    renderizarReporteAST
-} from "./ast.svg";
+    generarReportes
+} from "./reportes.service";
 
 
 async function main(): Promise<void> {
 
     /* =====================================================
-       PRUEBA 1 — AST VÁLIDO
+       EJECUCIÓN 1 — CON ERRORES
        ===================================================== */
 
-    const codigoValido = `main {
-        int x = 2 + 3 * 4;
-        print(x);
+    const codigo1 = `main {
+        int alpha = ;
+        @
+        print("primero");
     }`;
 
-    const resultadoValido =
-        analizarCodigo(codigoValido);
+    const resultado1 =
+        analizarCodigo(codigo1);
 
-    const reporteValido =
-        generarReporteAST(resultadoValido);
-
-    const reporteValidoSVG =
-        await renderizarReporteAST(reporteValido);
+    const reportes1 =
+        await generarReportes(resultado1);
 
 
-    console.log("=== AST VÁLIDO ===");
+    console.log("=== EJECUCIÓN 1 ===");
 
     console.log(
-        "Nodos:",
-        reporteValidoSVG.nodos.length
+        "Tokens:",
+        reportes1.tablaTokens.filas.length
     );
 
     console.log(
-        "Aristas:",
-        reporteValidoSVG.aristas.length
+        "Errores:",
+        reportes1.errores.filas.length
     );
 
     console.log(
-        "DOT disponible:",
-        reporteValidoSVG.dot !== null
+        "Nodos AST:",
+        reportes1.ast.nodos.length
     );
 
     console.log(
         "SVG disponible:",
-        reporteValidoSVG.svg !== null
-    );
-
-    console.log(
-        "Contiene <svg:",
-        reporteValidoSVG.svg?.includes("<svg") ?? false
-    );
-
-    console.log(
-        "Contiene </svg>:",
-        reporteValidoSVG.svg?.includes("</svg>") ?? false
+        reportes1.ast.svg !== null
     );
 
 
     /* =====================================================
-       PRUEBA 2 — AST PARCIAL RECUPERADO
+       EJECUCIÓN 2 — CÓDIGO VÁLIDO
        ===================================================== */
 
-    const codigoParcial = `main {
-        int x = ;
-        print("continua");
+    const codigo2 = `main {
+        int beta = 2;
+        print(beta);
     }`;
 
-    const resultadoParcial =
-        analizarCodigo(codigoParcial);
+    const resultado2 =
+        analizarCodigo(codigo2);
 
-    const reporteParcial =
-        generarReporteAST(resultadoParcial);
-
-    const reporteParcialSVG =
-        await renderizarReporteAST(reporteParcial);
+    const reportes2 =
+        await generarReportes(resultado2);
 
 
-    console.log("\n=== AST PARCIAL ===");
+    console.log("\n=== EJECUCIÓN 2 ===");
 
     console.log(
-        "Errores sintácticos:",
-        resultadoParcial.erroresSintacticos.length
+        "Tokens:",
+        reportes2.tablaTokens.filas.length
     );
 
     console.log(
-        "AST disponible:",
-        resultadoParcial.ast !== null
+        "Errores:",
+        reportes2.errores.filas.length
     );
 
     console.log(
-        "Nodos:",
-        reporteParcialSVG.nodos.length
-    );
-
-    console.log(
-        "DOT disponible:",
-        reporteParcialSVG.dot !== null
+        "Nodos AST:",
+        reportes2.ast.nodos.length
     );
 
     console.log(
         "SVG disponible:",
-        reporteParcialSVG.svg !== null
-    );
-
-    console.log(
-        "Contiene <svg:",
-        reporteParcialSVG.svg?.includes("<svg") ?? false
+        reportes2.ast.svg !== null
     );
 
 
     /* =====================================================
-       PRUEBA 3 — AST NULL
+       VERIFICACIÓN DE AISLAMIENTO
        ===================================================== */
 
-    const reporteSinAST =
-        generarReporteAST({
-            ast: null,
-            tokens: [],
-            erroresLexicos: [],
-            erroresSintacticos: []
-        });
+    const contieneBeta =
+        reportes2.tablaTokens.filas.some(
+            (fila) => fila.lexema === "beta"
+        );
 
-    const reporteSinASTSVG =
-        await renderizarReporteAST(reporteSinAST);
+    const contieneAlpha =
+        reportes2.tablaTokens.filas.some(
+            (fila) => fila.lexema === "alpha"
+        );
+
+    const contienePrimero =
+        reportes2.tablaTokens.filas.some(
+            (fila) => fila.lexema.includes("primero")
+        );
 
 
-    console.log("\n=== AST NULL ===");
+    console.log("\n=== AISLAMIENTO ===");
 
     console.log(
-        JSON.stringify(
-            reporteSinASTSVG,
-            null,
-            2
-        )
+        "Segundo reporte contiene beta:",
+        contieneBeta
+    );
+
+    console.log(
+        "Segundo reporte contiene alpha:",
+        contieneAlpha
+    );
+
+    console.log(
+        "Segundo reporte contiene primero:",
+        contienePrimero
+    );
+
+    console.log(
+        "Segundo reporte tiene errores:",
+        reportes2.errores.filas.length > 0
     );
 }
 
 
 main().catch((error) => {
     console.error(
-        "Error durante la prueba del SVG:",
+        "Error durante la prueba de reportes:",
         error
     );
 
