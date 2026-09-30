@@ -1,31 +1,64 @@
+export type EstadoAnalisis =
+    | "sin-analizar"
+    | "analizando"
+    | "completado"
+    | "error";
+
+
 interface AnalysisStatusProps {
-    analizado: boolean;
+    estado: EstadoAnalisis;
+    mensajeError: string | null;
 }
 
 
 export function AnalysisStatus({
-    analizado
+    estado,
+    mensajeError
 }: AnalysisStatusProps) {
+
+    let titulo = "Sin analizar";
+
+    let descripcion =
+        "Escribe código AutoInfra y presiona Analizar.";
+
+
+    if (estado === "analizando") {
+        titulo = "Analizando";
+
+        descripcion =
+            "Esperando respuesta del Backend.";
+    }
+
+
+    if (estado === "completado") {
+        titulo = "Análisis completado";
+
+        descripcion =
+            "El Backend respondió correctamente.";
+    }
+
+
+    if (estado === "error") {
+        titulo = "Error de comunicación";
+
+        descripcion =
+            mensajeError ??
+            "No fue posible comunicarse con el Backend.";
+    }
+
+
     return (
         <section className="status-panel">
             <div>
                 <strong>Estado:</strong>
 
                 <span className="status-value">
-                    {
-                        analizado
-                            ? "Análisis completado"
-                            : "Sin analizar"
-                    }
+                    {titulo}
                 </span>
             </div>
 
             <p>
-                {
-                    analizado
-                        ? "El Backend respondió correctamente."
-                        : "Escribe código AutoInfra y presiona Analizar."
-                }
+                {descripcion}
             </p>
         </section>
     );

@@ -1,10 +1,12 @@
 interface ToolbarProps {
     onAnalyze: () => void;
+    analizando: boolean;
 }
 
 
 export function Toolbar({
-    onAnalyze
+    onAnalyze,
+    analizando
 }: ToolbarProps) {
     return (
         <header className="toolbar">
@@ -21,8 +23,13 @@ export function Toolbar({
                     type="button"
                     className="primary-button"
                     onClick={onAnalyze}
+                    disabled={analizando}
                 >
-                    Analizar
+                    {
+                        analizando
+                            ? "Analizando..."
+                            : "Analizar"
+                    }
                 </button>
             </div>
         </header>

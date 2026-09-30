@@ -4,7 +4,14 @@ import {
 
 import { Toolbar } from "./components/Toolbar";
 import { CodeEditor } from "./components/CodeEditor";
-import { AnalysisStatus } from "./components/AnalysisStatus";
+
+import {
+    AnalysisStatus
+} from "./components/AnalysisStatus";
+
+import type {
+    EstadoAnalisis
+} from "./components/AnalysisStatus";
 
 import {
     analizarCodigo
@@ -21,19 +28,59 @@ function App() {
     const [codigo, setCodigo] =
         useState<string>("");
 
+    const [, setResultado] =
+        useState<RespuestaAnalisis | null>(null);
+
     const [
-        resultado,
-        setResultado
-    ] = useState<RespuestaAnalisis | null>(
+        estadoAnalisis,
+        setEstadoAnalisis
+    ] = useState<EstadoAnalisis>(
+        "sin-analizar"
+    );
+
+    const [
+        mensajeError,
+        setMensajeError
+    ] = useState<string | null>(
         null
     );
 
 
     async function manejarAnalisis(): Promise<void> {
-        const respuesta =
-            await analizarCodigo(codigo);
+        setEstadoAnalisis("analizando");
+        setMensajeError(null);
 
-        setResultado(respuesta);
+        try {
+            const respuesta =
+                await analizarCodigo(codigo);
+
+            setResultado(respuesta);
+
+            setEstadoAnalisis(
+                "completado"
+            );
+
+        } catch (error: unknown) {
+            /*
+             * Una petición fallida no debe conservar
+             * el resultado de un análisis anterior.
+             */
+            setResultado(null);
+
+            setEstadoAnalisis(
+                "error"
+            );
+
+            if (error instanceof Error) {
+                setMensajeError(
+                    error.message
+                );
+            } else {
+                setMensajeError(
+                    "Ocurrió un error inesperado al comunicarse con el Backend."
+                );
+            }
+        }
     }
 
 
@@ -43,6 +90,10 @@ function App() {
                 onAnalyze={() => {
                     void manejarAnalisis();
                 }}
+                analizando={
+                    estadoAnalisis ===
+                    "analizando"
+                }
             />
 
             <main className="workspace">
@@ -52,7 +103,8 @@ function App() {
                 />
 
                 <AnalysisStatus
-                    analizado={resultado !== null}
+                    estado={estadoAnalisis}
+                    mensajeError={mensajeError}
                 />
             </main>
         </div>
