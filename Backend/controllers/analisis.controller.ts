@@ -1,8 +1,20 @@
 import { Request, Response } from "express";
+
 import {
-    analizarCodigo,
+    analizarCodigo
+} from "../analizador/parser";
+
+import type {
     ResultadoAnalisis
 } from "../analizador/parser";
+
+import {
+    generarReportes
+} from "../reports/reportes.service";
+
+import type {
+    ResultadoReportes
+} from "../reports/reportes.types";
 
 
 interface SolicitudAnalisis {
@@ -10,41 +22,74 @@ interface SolicitudAnalisis {
 }
 
 
-export const analizar = (
+interface RespuestaAnalisisAPI
+    extends ResultadoAnalisis {
+    reportes: ResultadoReportes;
+}
+
+
+export const analizar = async (
     req: Request<{}, {}, SolicitudAnalisis>,
     res: Response
-): Response => {
+): Promise<Response> => {
+
     const { codigo } = req.body;
 
+
     /*
-     * Esta validación pertenece a la entrada HTTP,
-     * no al lenguaje AutoInfra.
-     *
-     * Solo verificamos que la API haya recibido
-     * una cadena para poder enviarla al analizador.
+     * Validación exclusivamente de la petición HTTP.
+     * No pertenece al análisis del lenguaje AutoInfra.
      */
     if (typeof codigo !== "string") {
         return res.status(400).json({
-            error: "El campo 'codigo' es obligatorio y debe ser una cadena."
+            error:
+                "El campo 'codigo' es obligatorio y debe ser una cadena."
         });
     }
 
+
     try {
+        /*
+         * El código se analiza UNA sola vez.
+         */
         const resultado: ResultadoAnalisis =
             analizarCodigo(codigo);
 
-        return res.status(200).json(resultado);
+
+        /*
+         * Todos los reportes se derivan del mismo
+         * ResultadoAnalisis.
+         */
+        const reportes: ResultadoReportes =
+            await generarReportes(resultado);
+
+
+        const respuesta: RespuestaAnalisisAPI = {
+            ...resultado,
+            reportes
+        };
+
+
+        return res
+            .status(200)
+            .json(respuesta);
+
     } catch (error) {
         /*
-         * Los errores léxicos y sintácticos normales NO llegan aquí:
-         * analizarCodigo los devuelve dentro de ResultadoAnalisis.
+         * Los errores léxicos y sintácticos normales
+         * forman parte de ResultadoAnalisis y NO
+         * deben producir HTTP 500.
          *
-         * Este catch queda exclusivamente para fallos internos reales.
+         * Aquí llegan únicamente fallos internos reales.
          */
-        console.error("Error interno al analizar el código:", error);
+        console.error(
+            "Error interno al analizar el código:",
+            error
+        );
 
         return res.status(500).json({
-            error: "Ocurrió un error interno durante el análisis."
+            error:
+                "Ocurrió un error interno durante el análisis."
         });
     }
 };
