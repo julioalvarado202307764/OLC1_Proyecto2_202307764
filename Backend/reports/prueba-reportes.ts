@@ -1,50 +1,16 @@
-import type {
-    ResultadoReportes
-} from "./reportes.types";
+import { analizarCodigo } from "../analizador/parser";
+import { generarReporteTokens } from "./tokens.report";
 
 
-const prueba: ResultadoReportes = {
-    tablaTokens: {
-        filas: [
-            {
-                numero: 1,
-                lexema: "main",
-                token: "MAIN",
-                linea: 1,
-                columna: 1
-            }
-        ]
-    },
+const codigo = `main {
+    int x = 10;
+    print(x);
+}`;
 
-    errores: {
-        filas: [
-            {
-                numero: 1,
-                tipo: "Sintáctico",
-                codigo: null,
-                descripcion: "Ejemplo de error sintáctico",
-                linea: 2,
-                columna: 5
-            }
-        ]
-    },
+const resultado = analizarCodigo(codigo);
 
-    ast: {
-        nodos: [
-            {
-                id: "n0",
-                etiqueta: "Program"
-            }
-        ],
-
-        aristas: [],
-
-        dot: null,
-        svg: null
-    }
-};
-
+const reporte = generarReporteTokens(resultado);
 
 console.log(
-    JSON.stringify(prueba, null, 2)
+    JSON.stringify(reporte, null, 2)
 );
