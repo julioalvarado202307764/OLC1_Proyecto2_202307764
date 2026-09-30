@@ -1,20 +1,15 @@
-import { analizarCodigo } from "../analizador/parser";
-import { generarReporteErrores } from "./errores.report";
+import type { ResultadoAnalisis } from "../analizador/parser";
+import { generarReporteAST } from "./ast.report";
 
 
-const codigo = `main {
-    int x = ;
-    @
-    print("continua");
+const resultadoSinAST: ResultadoAnalisis = {
+    ast: null,
+    tokens: [],
+    erroresLexicos: [],
+    erroresSintacticos: []
+};
 
-    int y = ;
-    #
-    print("termino");
-}`;
-
-const resultado = analizarCodigo(codigo);
-
-const reporte = generarReporteErrores(resultado);
+const reporte = generarReporteAST(resultadoSinAST);
 
 console.log(
     JSON.stringify(reporte, null, 2)
