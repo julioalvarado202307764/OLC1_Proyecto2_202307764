@@ -1,11 +1,20 @@
 import { analizarCodigo } from "./parser";
 
-const codigo = `main {
-    int x = ;
-    print("continua");
+const codigo = `int brokenA = 10
 
-    int y = ;
-    print("termino");
+server backend {
+    cpu = 4;
+    memory = 16;
+}
+
+string brokenB = "production"
+
+task validTask {
+    print("task valida");
+}
+
+main {
+    run validTask;
 }`;
 
 const resultado = analizarCodigo(codigo);

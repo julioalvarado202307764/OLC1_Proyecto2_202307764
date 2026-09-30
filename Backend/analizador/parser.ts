@@ -39,12 +39,19 @@ export function analizarCodigo(codigo: string): ResultadoParser {
     };
 
     contexto.parseError = (mensaje: string, hash: any) => {
+        const ultimoToken =
+            contexto.tokens.length > 0
+                ? contexto.tokens[contexto.tokens.length - 1]
+                : null;
+
         const linea =
+            ultimoToken?.linea ??
             hash?.loc?.first_line ??
             ((hash?.line ?? 0) + 1);
 
         const columna =
-            (hash?.loc?.first_column ?? 0) + 1;
+            ultimoToken?.columna ??
+            ((hash?.loc?.first_column ?? 0) + 1);
 
         const lexema =
             hash?.text && hash.text.length > 0

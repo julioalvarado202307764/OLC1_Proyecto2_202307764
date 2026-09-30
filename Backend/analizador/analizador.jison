@@ -749,7 +749,19 @@ global_declaration_list
 
     | global_declaration_list global_declaration
         {
-            $1.push($2);
+            if ($2 !== null) {
+                $1.push($2);
+            }
+
+            $$ = $1;
+        }
+
+    | global_declaration_list error global_declaration
+        {
+            if ($3 !== null) {
+                $1.push($3);
+            }
+
             $$ = $1;
         }
     ;
@@ -836,6 +848,14 @@ global_declaration
         {
             $$ = $1;
         }
+    | error SEMICOLON
+        {
+            $$ = null;
+        }
+    | error RBRACE
+    {
+        $$ = null;
+    }
     ;
 
 /* =========================================================
@@ -941,7 +961,10 @@ resource_property_list
 
     | resource_property_list resource_property
         {
-            $1.push($2);
+            if ($2 !== null) {
+                $1.push($2);
+            }
+
             $$ = $1;
         }
     ;
@@ -955,6 +978,11 @@ resource_property
                 name: $1,
                 value: $3
             };
+        }
+
+    | error SEMICOLON
+        {
+            $$ = null;
         }
     ;
 
