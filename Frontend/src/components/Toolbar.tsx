@@ -1,4 +1,11 @@
-export function Toolbar() {
+interface ToolbarProps {
+    onAnalyze: () => void;
+}
+
+
+export function Toolbar({
+    onAnalyze
+}: ToolbarProps) {
     return (
         <header className="toolbar">
             <div className="toolbar-brand">
@@ -13,8 +20,7 @@ export function Toolbar() {
                 <button
                     type="button"
                     className="primary-button"
-                    disabled
-                    title="Se habilitará al conectar el Backend"
+                    onClick={onAnalyze}
                 >
                     Analizar
                 </button>
