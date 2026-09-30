@@ -1129,7 +1129,10 @@ statement_list
 
     | statement_list statement
         {
-            $1.push($2);
+            if ($2 !== null) {
+                $1.push($2);
+            }
+
             $$ = $1;
         }
     ;
@@ -1182,6 +1185,10 @@ statement
     | run_statement
         {
             $$ = $1;
+        }
+    | error SEMICOLON
+        {
+            $$ = null;
         }
     ;
 
@@ -1256,20 +1263,21 @@ while_statement
 simple_statement
     : expression SEMICOLON
         {
-            /*
-             * Por ahora las expresiones utilizadas como statement
-             * corresponden a llamadas.
-             */
             if ($1.type !== "CallExpression") {
-                throw new Error(
-                    "Solo una llamada puede utilizarse como expresión independiente."
-                );
-            }
+                if (yy.registrarErrorSintacticoManual) {
+                    yy.registrarErrorSintacticoManual(
+                        "Solo una llamada puede utilizarse como expresión independiente.",
+                        @1
+                    );
+                }
 
-            $$ = {
-                type: "ExpressionStatement",
-                expression: $1
-            };
+                $$ = null;
+            } else {
+                $$ = {
+                    type: "ExpressionStatement",
+                    expression: $1
+                };
+            }
         }
 
     | assignment_core SEMICOLON
@@ -1282,26 +1290,26 @@ simple_statement
 assignment_core
     : expression ASSIGN expression
         {
-            /*
-             * Validación exclusivamente de FORMA sintáctica.
-             * No comprueba tipos, ámbitos, propiedades existentes
-             * ni propiedades de solo lectura.
-             */
             if (
                 $1.type !== "IdentifierExpression" &&
                 $1.type !== "PropertyAccessExpression" &&
                 $1.type !== "IndexExpression"
             ) {
-                throw new Error(
-                    "Objetivo de asignación sintácticamente inválido."
-                );
-            }
+                if (yy.registrarErrorSintacticoManual) {
+                    yy.registrarErrorSintacticoManual(
+                        "Objetivo de asignación sintácticamente inválido.",
+                        @1
+                    );
+                }
 
-            $$ = {
-                type: "Assignment",
-                target: $1,
-                value: $3
-            };
+                $$ = null;
+            } else {
+                $$ = {
+                    type: "Assignment",
+                    target: $1,
+                    value: $3
+                };
+            }
         }
     ;
 
