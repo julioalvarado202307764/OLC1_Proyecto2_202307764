@@ -1,10 +1,12 @@
 interface ToolbarProps {
+    onNew: () => void;
     onAnalyze: () => void;
     analizando: boolean;
 }
 
 
 export function Toolbar({
+    onNew,
     onAnalyze,
     analizando
 }: ToolbarProps) {
@@ -19,6 +21,15 @@ export function Toolbar({
             </div>
 
             <div className="toolbar-actions">
+                <button
+                    type="button"
+                    className="primary-button"
+                    onClick={onNew}
+                    disabled={analizando}
+                >
+                    Nuevo
+                </button>
+
                 <button
                     type="button"
                     className="primary-button"

@@ -28,8 +28,10 @@ function App() {
     const [codigo, setCodigo] =
         useState<string>("");
 
-    const [nombreArchivo] =
-        useState<string>("nuevo.infra");
+    const [
+        nombreArchivo,
+        setNombreArchivo
+    ] = useState<string>("nuevo.infra");
 
     const [, setResultado] =
         useState<RespuestaAnalisis | null>(null);
@@ -48,6 +50,18 @@ function App() {
         null
     );
 
+    function manejarNuevo(): void {
+        setCodigo("");
+        setNombreArchivo("nuevo.infra");
+
+        setResultado(null);
+
+        setEstadoAnalisis(
+            "sin-analizar"
+        );
+
+        setMensajeError(null);
+    }
 
     async function manejarAnalisis(): Promise<void> {
         setEstadoAnalisis("analizando");
@@ -90,6 +104,7 @@ function App() {
     return (
         <div className="app">
             <Toolbar
+                onNew={manejarNuevo}
                 onAnalyze={() => {
                     void manejarAnalisis();
                 }}
