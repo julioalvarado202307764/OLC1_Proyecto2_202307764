@@ -99,6 +99,12 @@ function App() {
         }
     }
 
+    function manejarGuardar(): void {
+        descargarArchivoInfra(
+            codigo,
+            nombreArchivo
+        );
+    }
     function manejarGuardarComo(): void {
         const nombreIngresado =
             window.prompt(
@@ -180,6 +186,7 @@ function App() {
                 onOpen={(archivo) => {
                     void manejarAbrir(archivo);
                 }}
+                onSave={manejarGuardar}
                 onSaveAs={manejarGuardarComo}
                 onAnalyze={() => {
                     void manejarAnalisis();
