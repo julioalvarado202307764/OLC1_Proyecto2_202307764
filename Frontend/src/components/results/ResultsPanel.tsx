@@ -13,6 +13,9 @@ import {
 interface ResultsPanelProps {
     resultado: RespuestaAnalisis | null;
 }
+import {
+    TokensTable
+} from "./TokensTable";
 
 
 export function ResultsPanel({
@@ -38,6 +41,13 @@ export function ResultsPanel({
                 <ErrorsTable
                     errores={
                         resultado.reportes.errores.filas
+                    }
+                />
+                <TokensTable
+                    tokens={
+                        resultado.reportes
+                            .tablaTokens
+                            .filas
                     }
                 />
             </div>

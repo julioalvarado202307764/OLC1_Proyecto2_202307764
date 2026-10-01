@@ -384,3 +384,12 @@
 .report-table tbody tr:last-child td {
     border-bottom: 0;
 }
+
+.token-lexeme {
+    font-family:
+        Consolas,
+        "Courier New",
+        monospace;
+
+    white-space: pre-wrap;
+}
