@@ -6,9 +6,7 @@ node_modules/
 # =========================
 # Variables de entorno
 # =========================
-.env
-.env.*
-!.env.example
+
 
 # =========================
 # TypeScript / compilación
