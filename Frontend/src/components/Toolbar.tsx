@@ -1,5 +1,11 @@
+import {
+    useRef
+} from "react";
+
+
 interface ToolbarProps {
     onNew: () => void;
+    onOpen: (archivo: File) => void;
     onAnalyze: () => void;
     analizando: boolean;
 }
@@ -7,9 +13,37 @@ interface ToolbarProps {
 
 export function Toolbar({
     onNew,
+    onOpen,
     onAnalyze,
     analizando
 }: ToolbarProps) {
+    const inputArchivoRef =
+        useRef<HTMLInputElement>(null);
+
+
+    function seleccionarArchivo(): void {
+        inputArchivoRef.current?.click();
+    }
+
+
+    function manejarArchivoSeleccionado(
+        event: React.ChangeEvent<HTMLInputElement>
+    ): void {
+        const archivo =
+            event.target.files?.[0];
+
+        if (archivo) {
+            onOpen(archivo);
+        }
+
+        /*
+         * Permite volver a seleccionar posteriormente
+         * el mismo archivo.
+         */
+        event.target.value = "";
+    }
+
+
     return (
         <header className="toolbar">
             <div className="toolbar-brand">
@@ -29,6 +63,23 @@ export function Toolbar({
                 >
                     Nuevo
                 </button>
+
+                <button
+                    type="button"
+                    className="primary-button"
+                    onClick={seleccionarArchivo}
+                    disabled={analizando}
+                >
+                    Abrir
+                </button>
+
+                <input
+                    ref={inputArchivoRef}
+                    type="file"
+                    accept=".infra"
+                    onChange={manejarArchivoSeleccionado}
+                    hidden
+                />
 
                 <button
                     type="button"

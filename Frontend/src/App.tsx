@@ -23,6 +23,9 @@ import type {
 
 import "./App.css";
 
+import {
+    leerArchivoInfra
+} from "./services/archivo.service";
 
 function App() {
     const [codigo, setCodigo] =
@@ -61,6 +64,37 @@ function App() {
         );
 
         setMensajeError(null);
+    }
+
+    async function manejarAbrir(
+        archivo: File
+    ): Promise<void> {
+        try {
+            const contenido =
+                await leerArchivoInfra(archivo);
+
+            setCodigo(contenido);
+
+            setNombreArchivo(
+                archivo.name
+            );
+
+            setResultado(null);
+
+            setEstadoAnalisis(
+                "sin-analizar"
+            );
+
+            setMensajeError(null);
+
+        } catch (error: unknown) {
+            const mensaje =
+                error instanceof Error
+                    ? error.message
+                    : "No fue posible abrir el archivo.";
+
+            window.alert(mensaje);
+        }
     }
 
     async function manejarAnalisis(): Promise<void> {
@@ -105,6 +139,9 @@ function App() {
         <div className="app">
             <Toolbar
                 onNew={manejarNuevo}
+                onOpen={(archivo) => {
+                    void manejarAbrir(archivo);
+                }}
                 onAnalyze={() => {
                     void manejarAnalisis();
                 }}
