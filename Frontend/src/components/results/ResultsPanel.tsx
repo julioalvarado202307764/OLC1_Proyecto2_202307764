@@ -16,7 +16,9 @@ interface ResultsPanelProps {
 import {
     TokensTable
 } from "./TokensTable";
-
+import {
+    AstViewer
+} from "./AstViewer";
 
 export function ResultsPanel({
     resultado
@@ -48,6 +50,11 @@ export function ResultsPanel({
                         resultado.reportes
                             .tablaTokens
                             .filas
+                    }
+                />
+                <AstViewer
+                    svg={
+                        resultado.reportes.ast.svg
                     }
                 />
             </div>
