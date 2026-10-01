@@ -28,6 +28,9 @@ function App() {
     const [codigo, setCodigo] =
         useState<string>("");
 
+    const [nombreArchivo] =
+        useState<string>("nuevo.infra");
+
     const [, setResultado] =
         useState<RespuestaAnalisis | null>(null);
 
@@ -99,6 +102,7 @@ function App() {
             <main className="workspace">
                 <CodeEditor
                     value={codigo}
+                    nombreArchivo={nombreArchivo}
                     onChange={setCodigo}
                 />
 

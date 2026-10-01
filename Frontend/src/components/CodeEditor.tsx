@@ -1,11 +1,13 @@
 interface CodeEditorProps {
     value: string;
+    nombreArchivo: string;
     onChange: (value: string) => void;
 }
 
 
 export function CodeEditor({
     value,
+    nombreArchivo,
     onChange
 }: CodeEditorProps) {
     return (
@@ -14,7 +16,7 @@ export function CodeEditor({
                 <h2>Editor AutoInfra</h2>
 
                 <span className="file-label">
-                    archivo.infra
+                    {nombreArchivo}
                 </span>
             </div>
 
