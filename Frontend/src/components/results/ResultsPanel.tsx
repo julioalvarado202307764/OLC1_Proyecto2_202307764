@@ -2,6 +2,10 @@ import type {
     RespuestaAnalisis
 } from "../../types/analisis.types";
 
+import {
+    AnalysisSummary
+} from "./AnalysisSummary";
+
 
 interface ResultsPanelProps {
     resultado: RespuestaAnalisis | null;
@@ -24,11 +28,10 @@ export function ResultsPanel({
                 </h2>
             </div>
 
-            <div className="results-placeholder">
-                <p>
-                    Se recibió correctamente el resultado
-                    del análisis.
-                </p>
+            <div className="results-content">
+                <AnalysisSummary
+                    resultado={resultado}
+                />
             </div>
         </section>
     );
