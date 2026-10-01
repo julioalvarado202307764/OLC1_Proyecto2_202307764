@@ -7,6 +7,7 @@ interface ToolbarProps {
     onNew: () => void;
     onOpen: (archivo: File) => void;
     onAnalyze: () => void;
+    onSaveAs: () => void;
     analizando: boolean;
 }
 
@@ -14,6 +15,7 @@ interface ToolbarProps {
 export function Toolbar({
     onNew,
     onOpen,
+    onSaveAs,
     onAnalyze,
     analizando
 }: ToolbarProps) {
@@ -71,6 +73,14 @@ export function Toolbar({
                     disabled={analizando}
                 >
                     Abrir
+                </button>
+                <button
+                    type="button"
+                    className="primary-button"
+                    onClick={onSaveAs}
+                    disabled={analizando}
+                >
+                    Guardar como
                 </button>
 
                 <input

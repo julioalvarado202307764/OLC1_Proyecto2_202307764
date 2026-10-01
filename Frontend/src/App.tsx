@@ -24,7 +24,9 @@ import type {
 import "./App.css";
 
 import {
-    leerArchivoInfra
+    descargarArchivoInfra,
+    leerArchivoInfra,
+    normalizarNombreInfra
 } from "./services/archivo.service";
 
 function App() {
@@ -97,6 +99,42 @@ function App() {
         }
     }
 
+    function manejarGuardarComo(): void {
+        const nombreIngresado =
+            window.prompt(
+                "Nombre del archivo:",
+                nombreArchivo
+            );
+
+        if (nombreIngresado === null) {
+            return;
+        }
+
+
+        if (nombreIngresado.trim() === "") {
+            window.alert(
+                "El nombre del archivo no puede estar vacío."
+            );
+
+            return;
+        }
+
+
+        const nuevoNombre =
+            normalizarNombreInfra(
+                nombreIngresado
+            );
+
+        descargarArchivoInfra(
+            codigo,
+            nuevoNombre
+        );
+
+        setNombreArchivo(
+            nuevoNombre
+        );
+    }
+
     async function manejarAnalisis(): Promise<void> {
         setEstadoAnalisis("analizando");
         setMensajeError(null);
@@ -142,6 +180,7 @@ function App() {
                 onOpen={(archivo) => {
                     void manejarAbrir(archivo);
                 }}
+                onSaveAs={manejarGuardarComo}
                 onAnalyze={() => {
                     void manejarAnalisis();
                 }}
