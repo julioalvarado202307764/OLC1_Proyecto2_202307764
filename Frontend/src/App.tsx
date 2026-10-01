@@ -63,6 +63,20 @@ function App() {
         null
     );
 
+    function manejarCambioCodigo(
+        nuevoCodigo: string
+    ): void {
+        setCodigo(nuevoCodigo);
+
+        setResultado(null);
+
+        setEstadoAnalisis(
+            "sin-analizar"
+        );
+
+        setMensajeError(null);
+    }
+
     function manejarNuevo(): void {
         setCodigo("");
         setNombreArchivo("nuevo.infra");
@@ -152,7 +166,7 @@ function App() {
     async function manejarAnalisis(): Promise<void> {
         setEstadoAnalisis("analizando");
         setMensajeError(null);
-
+        setResultado(null);
         try {
             const respuesta =
                 await analizarCodigo(codigo);
@@ -209,7 +223,7 @@ function App() {
                 <CodeEditor
                     value={codigo}
                     nombreArchivo={nombreArchivo}
-                    onChange={setCodigo}
+                    onChange={manejarCambioCodigo}
                 />
 
                 <AnalysisStatus
