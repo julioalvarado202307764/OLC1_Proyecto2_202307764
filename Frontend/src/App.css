@@ -214,3 +214,40 @@
         padding: 12px;
     }
 }
+
+.results-panel {
+    background: #181b22;
+    border: 1px solid #2d323d;
+    border-radius: 8px;
+
+    overflow: hidden;
+}
+
+
+.results-header {
+    min-height: 48px;
+    padding: 0 16px;
+
+    display: flex;
+    align-items: center;
+
+    background: #1e222b;
+    border-bottom: 1px solid #2d323d;
+}
+
+
+.results-header h2 {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+
+.results-placeholder {
+    padding: 18px;
+}
+
+
+.results-placeholder p {
+    margin: 0;
+    color: #9ca3af;
+}

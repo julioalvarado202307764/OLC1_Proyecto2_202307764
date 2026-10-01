@@ -29,6 +29,10 @@ import {
     normalizarNombreInfra
 } from "./services/archivo.service";
 
+import {
+    ResultsPanel
+} from "./components/results/ResultsPanel";
+
 function App() {
     const [codigo, setCodigo] =
         useState<string>("");
@@ -38,8 +42,12 @@ function App() {
         setNombreArchivo
     ] = useState<string>("nuevo.infra");
 
-    const [, setResultado] =
-        useState<RespuestaAnalisis | null>(null);
+    const [
+        resultado,
+        setResultado
+    ] = useState<RespuestaAnalisis | null>(
+        null
+    );
 
     const [
         estadoAnalisis,
@@ -207,6 +215,9 @@ function App() {
                 <AnalysisStatus
                     estado={estadoAnalisis}
                     mensajeError={mensajeError}
+                />
+                <ResultsPanel
+                    resultado={resultado}
                 />
             </main>
         </div>
