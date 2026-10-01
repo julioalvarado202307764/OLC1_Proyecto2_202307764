@@ -49,9 +49,3 @@ desktop.ini
 # Cobertura / testing
 # =========================
 coverage/
-
-# =========================
-# Archivos generados por Jison
-# =========================
-Backend/analizador/parser.js
-Backend/analizador/parser.js.map
