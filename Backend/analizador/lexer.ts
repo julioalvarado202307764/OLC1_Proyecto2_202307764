@@ -28,8 +28,6 @@ interface ContextoLexer {
     } | null;
 }
 
-// analizador.js es generado automáticamente por Jison.
-// No debe editarse manualmente.
 const moduloGenerado = require("./analizador.js");
 
 /*

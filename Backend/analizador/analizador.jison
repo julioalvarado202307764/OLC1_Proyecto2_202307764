@@ -995,6 +995,7 @@ function_declaration
       LPAREN parameter_list_optional RPAREN
       type_specifier
       block
+
         {
             $$ = {
                 type: "FunctionDeclaration",
@@ -1140,6 +1141,14 @@ base_type
 
 block
     : LBRACE statement_list RBRACE
+        {
+            $$ = {
+                type: "Block",
+                statements: $2
+            };
+        }
+
+    | LBRACE statement_list error RBRACE
         {
             $$ = {
                 type: "Block",

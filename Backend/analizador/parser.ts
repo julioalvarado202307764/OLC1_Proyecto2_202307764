@@ -161,13 +161,31 @@ export function analizarCodigo(codigo: string): ResultadoAnalisis {
         };
 
         /*
-         * Un error sintáctico irrecuperable ya fue registrado
-         * por parseError.
+         * Jison puede abortar una recuperación ya iniciada
+         * cuando no encuentra otro punto válido de
+         * sincronización antes de finalizar la entrada.
          *
-         * Cualquier otro error representa un problema real del
-         * analizador y no debe ocultarse.
+         * Solo tratamos ese caso concreto como parte del
+         * análisis si ya existe al menos un error sintáctico
+         * registrado por parseError.
+         *
+         * No se agrega ningún error nuevo aquí.
          */
-        if (!errorParser?.esErrorSintactico) {
+        const esAbortoRecuperacionJison =
+            error instanceof Error &&
+            error.message ===
+            "Parsing halted while starting to recover from another error.";
+
+        const recuperacionSintacticaYaRegistrada =
+            contexto.erroresSintacticos.length > 0;
+
+        if (
+            !errorParser?.esErrorSintactico &&
+            !(
+                esAbortoRecuperacionJison &&
+                recuperacionSintacticaYaRegistrada
+            )
+        ) {
             throw error;
         }
     }
