@@ -6,6 +6,9 @@ import {
     AnalysisSummary
 } from "./AnalysisSummary";
 
+import {
+    ErrorsTable
+} from "./ErrorsTable";
 
 interface ResultsPanelProps {
     resultado: RespuestaAnalisis | null;
@@ -31,6 +34,11 @@ export function ResultsPanel({
             <div className="results-content">
                 <AnalysisSummary
                     resultado={resultado}
+                />
+                <ErrorsTable
+                    errores={
+                        resultado.reportes.errores.filas
+                    }
                 />
             </div>
         </section>
