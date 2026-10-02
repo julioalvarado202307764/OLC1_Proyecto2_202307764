@@ -1,6 +1,6 @@
 # Gramática de AutoInfra
 
-## 1. Alcance y fuente de verdad
+## 1. Alcance 
 
 Este documento describe la gramática **realmente soportada por la versión implementada de AutoInfra**.
 

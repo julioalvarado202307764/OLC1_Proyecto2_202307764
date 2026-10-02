@@ -218,6 +218,8 @@ OLC1_Proyecto2_202307764/
     ├── gramatica.md
     ├── manual-tecnico.md
     └── manual-usuario.md
+    └── img/
+    └── capturas del manual
 ```
 
 > `Backend/analizador/analizador.js` es un archivo **generado por Jison** y está versionado intencionalmente en Git. No debe considerarse código escrito manualmente. Su fuente es `analizador.jison`.
