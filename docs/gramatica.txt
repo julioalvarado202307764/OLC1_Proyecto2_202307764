@@ -1,0 +1,411 @@
+================================================================================
+                        GRAMÁTICA FORMAL BNF - AUTOINFRA
+================================================================================
+
+NOTACIÓN UTILIZADA:
+- <nombre> : Símbolo no terminal
+- NOMBRE   : Símbolo terminal (token léxico)
+- ::=      : Define a / se compone de
+- |        : Alternativa de producción
+- $\varepsilon$ : Producción vacía (cadena vacía)
+
+
+================================================================================
+1. SÍMBOLO DE INICIO
+================================================================================
+
+<inicio>
+
+
+================================================================================
+2. PRODUCCIÓN DE INICIO
+================================================================================
+
+<inicio>
+    ::= <program>
+
+
+================================================================================
+3. SÍMBOLOS NO TERMINALES (IDENTIFICADOS POR PARTES)
+================================================================================
+
+3.1. Estructura General del Programa:
+    <inicio>
+    <program>
+    <global_declaration_list>
+    <global_declaration>
+    <main_declaration>
+
+3.2. Declaraciones Globales y Recursos:
+    <primitive_global_variable_declaration>
+    <resource_global_tail>
+    <resource_property_list>
+    <resource_property>
+    <function_declaration>
+    <parameter_list_optional>
+    <parameter_list>
+    <parameter>
+    <task_declaration>
+
+3.3. Tipos de Datos:
+    <primitive_type_specifier>
+    <primitive_base_type>
+    <type_specifier>
+    <base_type>
+
+3.4. Bloques e Instrucciones (Statements):
+    <block>
+    <statement_list>
+    <statement>
+    <variable_declaration>
+    <variable_declaration_core>
+    <simple_statement>
+    <assignment_core>
+    <if_statement>
+    <while_statement>
+    <for_statement>
+    <break_statement>
+    <continue_statement>
+    <return_statement>
+    <run_statement>
+
+3.5. Expresiones y Argumentos:
+    <expression>
+    <logical_or>
+    <logical_and>
+    <equality>
+    <comparison>
+    <term>
+    <factor>
+    <unary>
+    <postfix>
+    <primary>
+    <argument_list_optional>
+    <argument_list>
+
+
+================================================================================
+4. SÍMBOLOS TERMINALES (IDENTIFICADOS POR CATEGORÍA)
+================================================================================
+
+4.1. Palabras Reservadas de Tipos Primitivos:
+    INT
+    FLOAT
+    STRING
+    BOOL
+
+4.2. Palabras Reservadas de Tipos de Recursos:
+    SERVER
+    SERVICE
+    DATABASE
+
+4.3. Palabras Reservadas de Control de Flujo:
+    IF
+    ELSE
+    WHILE
+    FOR
+    BREAK
+    CONTINUE
+    RETURN
+
+4.4. Palabras Reservadas de Declaración y Ejecución:
+    FUNCTION
+    TASK
+    MAIN
+    RUN
+
+4.5. Literales e Identificadores:
+    TRUE
+    FALSE
+    IDENTIFIER
+    INTEGER_LITERAL
+    DECIMAL_LITERAL
+    STRING_LITERAL
+
+4.6. Operadores de Asignación y Aritméticos:
+    ASSIGN
+    PLUS
+    MINUS
+    MULTIPLY
+    DIVIDE
+    MODULO
+
+4.7. Operadores de Igualdad y Relacionales:
+    EQUAL
+    NOT_EQUAL
+    GREATER
+    LESS
+    GREATER_EQUAL
+    LESS_EQUAL
+
+4.8. Operadores Lógicos:
+    AND
+    OR
+    NOT
+
+4.9. Delimitadores y Signos de Agrupación:
+    LPAREN
+    RPAREN
+    LBRACE
+    RBRACE
+    LBRACKET
+    RBRACKET
+    SEMICOLON
+    COMMA
+    DOT
+
+4.10. Símbolo Especial de Sincronización Sintáctica:
+    error
+
+
+================================================================================
+5. PRODUCCIONES DE LA GRAMÁTICA (DIVIDIDAS POR PARTES)
+================================================================================
+
+--------------------------------------------------------------------------------
+PARTE 5.1: ESTRUCTURA PRINCIPAL DEL PROGRAMA
+--------------------------------------------------------------------------------
+
+<inicio>
+    ::= <program>
+
+<program>
+    ::= <global_declaration_list> <main_declaration>
+
+<global_declaration_list>
+    ::= $\varepsilon$
+    | <global_declaration_list> <global_declaration>
+    | <global_declaration_list> error <global_declaration>
+
+<global_declaration>
+    ::= <primitive_global_variable_declaration>
+    | SERVER <resource_global_tail>
+    | SERVICE <resource_global_tail>
+    | DATABASE <resource_global_tail>
+    | <function_declaration>
+    | <task_declaration>
+    | error SEMICOLON
+    | error RBRACE
+
+
+--------------------------------------------------------------------------------
+PARTE 5.2: VARIABLES GLOBALES PRIMITIVAS Y RECURSOS
+--------------------------------------------------------------------------------
+
+<primitive_global_variable_declaration>
+    ::= <primitive_type_specifier> IDENTIFIER ASSIGN <expression> SEMICOLON
+
+<primitive_type_specifier>
+    ::= <primitive_base_type>
+    | <primitive_base_type> LBRACKET RBRACKET
+
+<primitive_base_type>
+    ::= INT
+    | FLOAT
+    | STRING
+    | BOOL
+
+<resource_global_tail>
+    ::= IDENTIFIER LBRACE <resource_property_list> RBRACE
+    | IDENTIFIER ASSIGN <expression> SEMICOLON
+    | LBRACKET RBRACKET IDENTIFIER ASSIGN <expression> SEMICOLON
+
+<resource_property_list>
+    ::= $\varepsilon$
+    | <resource_property_list> <resource_property>
+
+<resource_property>
+    ::= IDENTIFIER ASSIGN <expression> SEMICOLON
+    | error SEMICOLON
+
+
+--------------------------------------------------------------------------------
+PARTE 5.3: FUNCIONES, TAREAS (TASKS) Y BLOQUE PRINCIPAL (MAIN)
+--------------------------------------------------------------------------------
+
+<function_declaration>
+    ::= FUNCTION IDENTIFIER LPAREN <parameter_list_optional> RPAREN <type_specifier> <block>
+
+<parameter_list_optional>
+    ::= $\varepsilon$
+    | <parameter_list>
+
+<parameter_list>
+    ::= <parameter>
+    | <parameter_list> COMMA <parameter>
+
+<parameter>
+    ::= <type_specifier> IDENTIFIER
+
+<task_declaration>
+    ::= TASK IDENTIFIER <block>
+
+<main_declaration>
+    ::= MAIN <block>
+
+
+--------------------------------------------------------------------------------
+PARTE 5.4: ESPECIFICADORES DE TIPOS GENERALES
+--------------------------------------------------------------------------------
+
+<type_specifier>
+    ::= <base_type>
+    | <base_type> LBRACKET RBRACKET
+
+<base_type>
+    ::= INT
+    | FLOAT
+    | STRING
+    | BOOL
+    | SERVER
+    | SERVICE
+    | DATABASE
+
+
+--------------------------------------------------------------------------------
+PARTE 5.5: BLOQUES E INSTRUCCIONES GENERALES
+--------------------------------------------------------------------------------
+
+<block>
+    ::= LBRACE <statement_list> RBRACE
+    | LBRACE <statement_list> error RBRACE
+
+<statement_list>
+    ::= $\varepsilon$
+    | <statement_list> <statement>
+
+<statement>
+    ::= <variable_declaration>
+    | <simple_statement>
+    | <if_statement>
+    | <while_statement>
+    | <for_statement>
+    | <break_statement>
+    | <continue_statement>
+    | <return_statement>
+    | <run_statement>
+    | error SEMICOLON
+
+
+--------------------------------------------------------------------------------
+PARTE 5.6: DECLARACIONES LOCALES, ASIGNACIONES E INSTRUCCIONES SIMPLES
+--------------------------------------------------------------------------------
+
+<variable_declaration>
+    ::= <variable_declaration_core> SEMICOLON
+
+<variable_declaration_core>
+    ::= <type_specifier> IDENTIFIER ASSIGN <expression>
+
+<simple_statement>
+    ::= <expression> SEMICOLON
+    | <assignment_core> SEMICOLON
+
+<assignment_core>
+    ::= <expression> ASSIGN <expression>
+
+<run_statement>
+    ::= RUN IDENTIFIER SEMICOLON
+
+
+--------------------------------------------------------------------------------
+PARTE 5.7: INSTRUCCIONES DE CONTROL DE FLUJO Y TRANSFERENCIA
+--------------------------------------------------------------------------------
+
+<if_statement>
+    ::= IF LPAREN <expression> RPAREN <block>
+    | IF LPAREN <expression> RPAREN <block> ELSE <block>
+    | IF LPAREN <expression> RPAREN <block> ELSE <if_statement>
+
+<while_statement>
+    ::= WHILE LPAREN <expression> RPAREN <block>
+
+<for_statement>
+    ::= FOR LPAREN <variable_declaration_core> SEMICOLON <expression> SEMICOLON <assignment_core> RPAREN <block>
+
+<break_statement>
+    ::= BREAK SEMICOLON
+
+<continue_statement>
+    ::= CONTINUE SEMICOLON
+
+<return_statement>
+    ::= RETURN <expression> SEMICOLON
+
+
+--------------------------------------------------------------------------------
+PARTE 5.8: EXPRESIONES LÓGICAS Y DE COMPARACIÓN
+--------------------------------------------------------------------------------
+
+<expression>
+    ::= <logical_or>
+
+<logical_or>
+    ::= <logical_and>
+    | <logical_or> OR <logical_and>
+
+<logical_and>
+    ::= <equality>
+    | <logical_and> AND <equality>
+
+<equality>
+    ::= <comparison>
+    | <equality> EQUAL <comparison>
+    | <equality> NOT_EQUAL <comparison>
+
+<comparison>
+    ::= <term>
+    | <comparison> LESS <term>
+    | <comparison> LESS_EQUAL <term>
+    | <comparison> GREATER <term>
+    | <comparison> GREATER_EQUAL <term>
+
+
+--------------------------------------------------------------------------------
+PARTE 5.9: EXPRESIONES ARITMÉTICAS, UNARIAS Y POSTFIJAS
+--------------------------------------------------------------------------------
+
+<term>
+    ::= <factor>
+    | <term> PLUS <factor>
+    | <term> MINUS <factor>
+
+<factor>
+    ::= <unary>
+    | <factor> MULTIPLY <unary>
+    | <factor> DIVIDE <unary>
+    | <factor> MODULO <unary>
+
+<unary>
+    ::= NOT <unary>
+    | MINUS <unary>
+    | <postfix>
+
+<postfix>
+    ::= <primary>
+    | <postfix> LPAREN <argument_list_optional> RPAREN
+    | <postfix> DOT IDENTIFIER
+    | <postfix> LBRACKET <expression> RBRACKET
+
+
+--------------------------------------------------------------------------------
+PARTE 5.10: EXPRESIONES PRIMARIAS Y LISTAS DE ARGUMENTOS
+--------------------------------------------------------------------------------
+
+<primary>
+    ::= INTEGER_LITERAL
+    | DECIMAL_LITERAL
+    | STRING_LITERAL
+    | TRUE
+    | FALSE
+    | IDENTIFIER
+    | LPAREN <expression> RPAREN
+    | LBRACKET <argument_list> RBRACKET
+
+<argument_list_optional>
+    ::= $\varepsilon$
+    | <argument_list>
+
+<argument_list>
+    ::= <expression>
+    | <argument_list> COMMA <expression>
