@@ -1,0 +1,50 @@
+server backend {
+    cpu = 4;
+    memory = 8;
+    disk = 100;
+    os = "ubuntu";
+}
+
+database postgres {
+    engine = "postgresql";
+    version = "16";
+    port = 5432;
+}
+
+service api {
+    port = 8080;
+    replicas = 2;
+    dependsOn = [postgres];
+}
+
+string[] packages = ["docker", "git"];
+
+function ready(server s, database db) bool {
+    return s.status == "running"
+        && db.status == "running"
+        && s.memory >= 8;
+}
+
+task production {
+    start(postgres);
+    start(backend);
+
+    for (int i = 0; i < length(packages); i = i + 1) {
+        install(backend, packages[i]);
+    }
+
+    if (ready(backend, postgres)) {
+        deploy(backend, api);
+        scale(api, 3);
+    }
+
+    if (api.status == "running") {
+        print("API disponible en puerto " + api.port);
+        print("Servidor: " + api.host.os);
+        print("Réplicas: " + api.replicas);
+    }
+}
+
+main {
+    run production;
+}

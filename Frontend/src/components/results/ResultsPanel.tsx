@@ -10,15 +10,35 @@ import {
     ErrorsTable
 } from "./ErrorsTable";
 
-interface ResultsPanelProps {
-    resultado: RespuestaAnalisis | null;
-}
 import {
     TokensTable
 } from "./TokensTable";
+
 import {
     AstViewer
 } from "./AstViewer";
+
+import {
+    ConsolePanel
+} from "./ConsolePanel";
+
+import {
+    InfrastructureView
+} from "./InfrastructureView";
+
+import {
+    SymbolsTable
+} from "./SymbolsTable";
+
+import {
+    BitacoraTable
+} from "./BitacoraTable";
+
+
+interface ResultsPanelProps {
+    resultado: RespuestaAnalisis | null;
+}
+
 
 export function ResultsPanel({
     resultado
@@ -27,12 +47,18 @@ export function ResultsPanel({
         return null;
     }
 
+    const { reportes, ejecucion } = resultado;
+
 
     return (
         <section className="results-panel">
             <div className="results-header">
                 <h2>
-                    Resultados del análisis
+                    {
+                        resultado.ejecutado
+                            ? "Resultados de la ejecución"
+                            : "Resultados del análisis"
+                    }
                 </h2>
             </div>
 
@@ -40,22 +66,57 @@ export function ResultsPanel({
                 <AnalysisSummary
                     resultado={resultado}
                 />
+
+                {
+                    resultado.mensajeEjecucion !== null && (
+                        <p className="execution-notice">
+                            {resultado.mensajeEjecucion}
+                        </p>
+                    )
+                }
+
+                {
+                    ejecucion !== null && (
+                        <ConsolePanel
+                            lineas={ejecucion.consola}
+                        />
+                    )
+                }
+
+                {
+                    reportes.estadoFinal !== undefined && (
+                        <InfrastructureView
+                            recursos={reportes.estadoFinal.filas}
+                        />
+                    )
+                }
+
                 <ErrorsTable
-                    errores={
-                        resultado.reportes.errores.filas
-                    }
+                    errores={reportes.errores.filas}
                 />
+
+                {
+                    reportes.tablaSimbolos !== undefined && (
+                        <SymbolsTable
+                            simbolos={reportes.tablaSimbolos.filas}
+                        />
+                    )
+                }
+
+                {
+                    reportes.bitacora !== undefined && (
+                        <BitacoraTable
+                            entradas={reportes.bitacora.filas}
+                        />
+                    )
+                }
+
                 <TokensTable
-                    tokens={
-                        resultado.reportes
-                            .tablaTokens
-                            .filas
-                    }
+                    tokens={reportes.tablaTokens.filas}
                 />
+
                 <AstViewer
-                    svg={
-                        resultado.reportes.ast.svg
-                    }
+                    svg={reportes.ast.svg}
                 />
             </div>
         </section>

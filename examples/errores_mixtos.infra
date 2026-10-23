@@ -1,0 +1,21 @@
+server backend { cpu = 4; memory = 8; disk = 100; os = "ubuntu"; }
+service api { port = 8080; replicas = 2; }
+
+main {
+    int a = 1; @
+    int b = 2; #
+    int c = 3; $
+    int d = ;
+    print(1);
+    print(a)
+    int e = 5;
+    print(2);
+    print(3);
+    print(4);
+    int = 7;
+    print(5);
+    print(6);
+    print(7);
+    10 / 0;
+    print(c);
+}

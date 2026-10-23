@@ -700,7 +700,7 @@ id_continue     [A-Za-z0-9_]
 
 
 /* =========================================================
-   GRAMÁTICA TEMPORAL
+   GRAMÁTICA DE AUTOINFRA
    ========================================================= */
 
 %start inicio
@@ -709,13 +709,7 @@ id_continue     [A-Za-z0-9_]
 
 
 /* =========================================================
-   INICIO TEMPORAL DE LA FASE 2
-   =========================================================
-
-   Por ahora el parser acepta únicamente UNA expresión.
-
-   Esto es intencional:
-   todavía NO estamos implementando el programa completo.
+   SÍMBOLO INICIAL
    ========================================================= */
 
 inicio
@@ -778,6 +772,8 @@ global_declaration
             if ($2.kind === "resource") {
                 $$ = {
                     type: "ResourceDeclaration",
+                    line: $2.line,
+                    column: $2.column,
                     resourceType: "server",
                     name: $2.name,
                     properties: $2.properties
@@ -785,6 +781,8 @@ global_declaration
             } else {
                 $$ = {
                     type: "VariableDeclaration",
+                    line: $2.line,
+                    column: $2.column,
                     variableType: {
                         name: "server",
                         isArray: $2.isArray
@@ -800,6 +798,8 @@ global_declaration
             if ($2.kind === "resource") {
                 $$ = {
                     type: "ResourceDeclaration",
+                    line: $2.line,
+                    column: $2.column,
                     resourceType: "service",
                     name: $2.name,
                     properties: $2.properties
@@ -807,6 +807,8 @@ global_declaration
             } else {
                 $$ = {
                     type: "VariableDeclaration",
+                    line: $2.line,
+                    column: $2.column,
                     variableType: {
                         name: "service",
                         isArray: $2.isArray
@@ -822,6 +824,8 @@ global_declaration
             if ($2.kind === "resource") {
                 $$ = {
                     type: "ResourceDeclaration",
+                    line: $2.line,
+                    column: $2.column,
                     resourceType: "database",
                     name: $2.name,
                     properties: $2.properties
@@ -829,6 +833,8 @@ global_declaration
             } else {
                 $$ = {
                     type: "VariableDeclaration",
+                    line: $2.line,
+                    column: $2.column,
                     variableType: {
                         name: "database",
                         isArray: $2.isArray
@@ -863,10 +869,24 @@ global_declaration
    ========================================================= */
 
 primitive_global_variable_declaration
-    : primitive_type_specifier IDENTIFIER ASSIGN expression SEMICOLON
+    : primitive_type_specifier IDENTIFIER SEMICOLON
         {
             $$ = {
                 type: "VariableDeclaration",
+                line: @2.first_line,
+                column: @2.first_column + 1,
+                variableType: $1,
+                name: $2,
+                initializer: null
+            };
+        }
+
+    | primitive_type_specifier IDENTIFIER ASSIGN expression SEMICOLON
+        {
+            $$ = {
+                type: "VariableDeclaration",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 variableType: $1,
                 name: $2,
                 initializer: $4
@@ -927,8 +947,34 @@ resource_global_tail
         {
             $$ = {
                 kind: "resource",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 name: $1,
                 properties: $3
+            };
+        }
+
+    | IDENTIFIER SEMICOLON
+        {
+            $$ = {
+                kind: "variable",
+                line: @1.first_line,
+                column: @1.first_column + 1,
+                name: $1,
+                isArray: false,
+                initializer: null
+            };
+        }
+
+    | LBRACKET RBRACKET IDENTIFIER SEMICOLON
+        {
+            $$ = {
+                kind: "variable",
+                line: @3.first_line,
+                column: @3.first_column + 1,
+                name: $3,
+                isArray: true,
+                initializer: null
             };
         }
 
@@ -936,6 +982,8 @@ resource_global_tail
         {
             $$ = {
                 kind: "variable",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 name: $1,
                 isArray: false,
                 initializer: $3
@@ -946,6 +994,8 @@ resource_global_tail
         {
             $$ = {
                 kind: "variable",
+                line: @3.first_line,
+                column: @3.first_column + 1,
                 name: $3,
                 isArray: true,
                 initializer: $5
@@ -975,6 +1025,8 @@ resource_property
         {
             $$ = {
                 type: "ResourceProperty",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 name: $1,
                 value: $3
             };
@@ -999,6 +1051,8 @@ function_declaration
         {
             $$ = {
                 type: "FunctionDeclaration",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 name: $2,
                 parameters: $4,
                 returnType: $6,
@@ -1040,6 +1094,8 @@ parameter
         {
             $$ = {
                 type: "Parameter",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 parameterType: $1,
                 name: $2
             };
@@ -1055,6 +1111,8 @@ task_declaration
         {
             $$ = {
                 type: "TaskDeclaration",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 name: $2,
                 body: $3
             };
@@ -1071,6 +1129,8 @@ main_declaration
         {
             $$ = {
                 type: "MainDeclaration",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 body: $2
             };
         }
@@ -1238,6 +1298,8 @@ run_statement
         {
             $$ = {
                 type: "RunInstruction",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 taskName: $2
             };
         }
@@ -1251,6 +1313,8 @@ if_statement
         {
             $$ = {
                 type: "IfInstruction",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 condition: $3,
                 thenBranch: $5,
                 elseBranch: null
@@ -1261,6 +1325,8 @@ if_statement
         {
             $$ = {
                 type: "IfInstruction",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 condition: $3,
                 thenBranch: $5,
                 elseBranch: $7
@@ -1271,6 +1337,8 @@ if_statement
         {
             $$ = {
                 type: "IfInstruction",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 condition: $3,
                 thenBranch: $5,
                 elseBranch: $7
@@ -1287,6 +1355,8 @@ while_statement
         {
             $$ = {
                 type: "WhileInstruction",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 condition: $3,
                 body: $5
             };
@@ -1312,6 +1382,8 @@ simple_statement
             } else {
                 $$ = {
                     type: "ExpressionStatement",
+                    line: @1.first_line,
+                    column: @1.first_column + 1,
                     expression: $1
                 };
             }
@@ -1343,6 +1415,8 @@ assignment_core
             } else {
                 $$ = {
                     type: "Assignment",
+                    line: @1.first_line,
+                    column: @1.first_column + 1,
                     target: $1,
                     value: $3
                 };
@@ -1363,6 +1437,8 @@ for_statement
         {
             $$ = {
                 type: "ForInstruction",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 initializer: $3,
                 condition: $5,
                 update: $7,
@@ -1379,7 +1455,9 @@ break_statement
     : BREAK SEMICOLON
         {
             $$ = {
-                type: "BreakInstruction"
+                type: "BreakInstruction",
+                line: @1.first_line,
+                column: @1.first_column + 1
             };
         }
     ;
@@ -1389,7 +1467,9 @@ continue_statement
     : CONTINUE SEMICOLON
         {
             $$ = {
-                type: "ContinueInstruction"
+                type: "ContinueInstruction",
+                line: @1.first_line,
+                column: @1.first_column + 1
             };
         }
     ;
@@ -1403,6 +1483,8 @@ return_statement
         {
             $$ = {
                 type: "ReturnInstruction",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 value: $2
             };
         }
@@ -1421,10 +1503,24 @@ variable_declaration
 
 
 variable_declaration_core
-    : type_specifier IDENTIFIER ASSIGN expression
+    : type_specifier IDENTIFIER
         {
             $$ = {
                 type: "VariableDeclaration",
+                line: @2.first_line,
+                column: @2.first_column + 1,
+                variableType: $1,
+                name: $2,
+                initializer: null
+            };
+        }
+
+    | type_specifier IDENTIFIER ASSIGN expression
+        {
+            $$ = {
+                type: "VariableDeclaration",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 variableType: $1,
                 name: $2,
                 initializer: $4
@@ -1460,6 +1556,8 @@ logical_or
         {
             $$ = {
                 type: "BinaryExpression",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 operator: "||",
                 left: $1,
                 right: $3
@@ -1482,6 +1580,8 @@ logical_and
         {
             $$ = {
                 type: "BinaryExpression",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 operator: "&&",
                 left: $1,
                 right: $3
@@ -1504,6 +1604,8 @@ equality
         {
             $$ = {
                 type: "BinaryExpression",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 operator: "==",
                 left: $1,
                 right: $3
@@ -1514,6 +1616,8 @@ equality
         {
             $$ = {
                 type: "BinaryExpression",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 operator: "!=",
                 left: $1,
                 right: $3
@@ -1536,6 +1640,8 @@ comparison
         {
             $$ = {
                 type: "BinaryExpression",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 operator: "<",
                 left: $1,
                 right: $3
@@ -1546,6 +1652,8 @@ comparison
         {
             $$ = {
                 type: "BinaryExpression",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 operator: "<=",
                 left: $1,
                 right: $3
@@ -1556,6 +1664,8 @@ comparison
         {
             $$ = {
                 type: "BinaryExpression",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 operator: ">",
                 left: $1,
                 right: $3
@@ -1566,6 +1676,8 @@ comparison
         {
             $$ = {
                 type: "BinaryExpression",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 operator: ">=",
                 left: $1,
                 right: $3
@@ -1588,6 +1700,8 @@ term
         {
             $$ = {
                 type: "BinaryExpression",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 operator: "+",
                 left: $1,
                 right: $3
@@ -1598,6 +1712,8 @@ term
         {
             $$ = {
                 type: "BinaryExpression",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 operator: "-",
                 left: $1,
                 right: $3
@@ -1620,6 +1736,8 @@ factor
         {
             $$ = {
                 type: "BinaryExpression",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 operator: "*",
                 left: $1,
                 right: $3
@@ -1630,6 +1748,8 @@ factor
         {
             $$ = {
                 type: "BinaryExpression",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 operator: "/",
                 left: $1,
                 right: $3
@@ -1640,6 +1760,8 @@ factor
         {
             $$ = {
                 type: "BinaryExpression",
+                line: @2.first_line,
+                column: @2.first_column + 1,
                 operator: "%",
                 left: $1,
                 right: $3
@@ -1663,6 +1785,8 @@ unary
         {
             $$ = {
                 type: "UnaryExpression",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 operator: "!",
                 operand: $2
             };
@@ -1672,6 +1796,8 @@ unary
         {
             $$ = {
                 type: "UnaryExpression",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 operator: "-",
                 operand: $2
             };
@@ -1708,6 +1834,8 @@ postfix
         {
             $$ = {
                 type: "CallExpression",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 callee: $1,
                 arguments: $3
             };
@@ -1717,6 +1845,8 @@ postfix
         {
             $$ = {
                 type: "PropertyAccessExpression",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 object: $1,
                 property: $3
             };
@@ -1726,6 +1856,8 @@ postfix
         {
             $$ = {
                 type: "IndexExpression",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 object: $1,
                 index: $3
             };
@@ -1742,6 +1874,8 @@ primary
         {
             $$ = {
                 type: "LiteralExpression",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 literalType: "int",
                 value: Number($1),
                 raw: $1
@@ -1752,6 +1886,8 @@ primary
         {
             $$ = {
                 type: "LiteralExpression",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 literalType: "float",
                 value: Number($1),
                 raw: $1
@@ -1785,6 +1921,8 @@ primary
 
             $$ = {
                 type: "LiteralExpression",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 literalType: "string",
                 value: valor,
                 raw: raw
@@ -1795,6 +1933,8 @@ primary
         {
             $$ = {
                 type: "LiteralExpression",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 literalType: "bool",
                 value: true,
                 raw: $1
@@ -1805,6 +1945,8 @@ primary
         {
             $$ = {
                 type: "LiteralExpression",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 literalType: "bool",
                 value: false,
                 raw: $1
@@ -1815,6 +1957,8 @@ primary
         {
             $$ = {
                 type: "IdentifierExpression",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 name: $1
             };
         }
@@ -1828,6 +1972,8 @@ primary
         {
             $$ = {
                 type: "ArrayExpression",
+                line: @1.first_line,
+                column: @1.first_column + 1,
                 elements: $2
             };
         }
@@ -1837,7 +1983,7 @@ primary
 /* =========================================================
    LISTAS DE EXPRESIONES
 
-   Se reutilizan temporalmente para:
+   Se reutilizan para:
    - argumentos de llamadas
    - elementos de arreglos
    ========================================================= */

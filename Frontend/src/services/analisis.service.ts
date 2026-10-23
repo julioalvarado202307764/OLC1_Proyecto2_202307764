@@ -5,11 +5,17 @@ import type {
 } from "../types/analisis.types";
 
 
-const URL_ANALIZAR =
-    "http://localhost:3000/analizar";
+/*
+ * URL base del Backend. Puede cambiarse con la variable
+ * VITE_API_URL (archivo .env del Frontend).
+ */
+const URL_BASE: string =
+    import.meta.env.VITE_API_URL ??
+    "http://localhost:3000";
 
 
-export async function analizarCodigo(
+async function enviar(
+    ruta: string,
     codigo: string
 ): Promise<RespuestaAnalisis> {
 
@@ -19,7 +25,7 @@ export async function analizarCodigo(
 
 
     const respuesta = await fetch(
-        URL_ANALIZAR,
+        `${URL_BASE}${ruta}`,
         {
             method: "POST",
 
@@ -63,4 +69,20 @@ export async function analizarCodigo(
         await respuesta.json();
 
     return datos as RespuestaAnalisis;
+}
+
+
+/** Análisis léxico, sintáctico y AST (sin ejecutar). */
+export function analizarCodigo(
+    codigo: string
+): Promise<RespuestaAnalisis> {
+    return enviar("/api/analyze", codigo);
+}
+
+
+/** Análisis y ejecución del programa. */
+export function ejecutarCodigo(
+    codigo: string
+): Promise<RespuestaAnalisis> {
+    return enviar("/api/execute", codigo);
 }

@@ -1,3 +1,17 @@
+// =====================================================================
+// Gramática de AutoInfra (notación BNF) - OLC1 Proyecto 2
+// Fuente de verdad: Backend/analizador/analizador.jison
+//
+// Notación:  <NO_TERMINAL> ::= producción | producción alternativa
+//            TERMINALES en mayúsculas; epsilon = cadena vacía.
+//            'error' es el símbolo especial de recuperación sintáctica
+//            (puntos de sincronización: ';' y '}').
+//
+// Precedencia, de menor a mayor (todos los binarios asocian a la izquierda):
+//   ||   &&   == !=   < <= > >=   + -   * / %   ! - (unarios)
+//   postfix: llamada, .propiedad, [índice]
+// =====================================================================
+
 Terminales = {
     INT,
     FLOAT,
@@ -119,7 +133,8 @@ Inicio = <INICIO>
                       |error RBRACE
 
 
-<PRIMITIVE_GLOBAL_VARIABLE_DECLARATION> ::= <PRIMITIVE_TYPE_SPECIFIER> IDENTIFIER ASSIGN <EXPRESSION> SEMICOLON
+<PRIMITIVE_GLOBAL_VARIABLE_DECLARATION> ::= <PRIMITIVE_TYPE_SPECIFIER> IDENTIFIER SEMICOLON
+                                         |<PRIMITIVE_TYPE_SPECIFIER> IDENTIFIER ASSIGN <EXPRESSION> SEMICOLON
 
 
 <PRIMITIVE_TYPE_SPECIFIER> ::= <PRIMITIVE_BASE_TYPE>
@@ -133,7 +148,9 @@ Inicio = <INICIO>
 
 
 <RESOURCE_GLOBAL_TAIL> ::= IDENTIFIER LBRACE <RESOURCE_PROPERTY_LIST> RBRACE
+                        |IDENTIFIER SEMICOLON
                         |IDENTIFIER ASSIGN <EXPRESSION> SEMICOLON
+                        |LBRACKET RBRACKET IDENTIFIER SEMICOLON
                         |LBRACKET RBRACKET IDENTIFIER ASSIGN <EXPRESSION> SEMICOLON
 
 
@@ -211,6 +228,8 @@ Inicio = <INICIO>
 
 <SIMPLE_STATEMENT> ::= <EXPRESSION> SEMICOLON
                     |<ASSIGNMENT_CORE> SEMICOLON
+// Nota: como instrucción independiente solo se acepta una llamada, y el
+// destino de una asignación debe ser identificador, propiedad o índice.
 
 
 <ASSIGNMENT_CORE> ::= <EXPRESSION> ASSIGN <EXPRESSION>
@@ -231,7 +250,8 @@ Inicio = <INICIO>
 <VARIABLE_DECLARATION> ::= <VARIABLE_DECLARATION_CORE> SEMICOLON
 
 
-<VARIABLE_DECLARATION_CORE> ::= <TYPE_SPECIFIER> IDENTIFIER ASSIGN <EXPRESSION>
+<VARIABLE_DECLARATION_CORE> ::= <TYPE_SPECIFIER> IDENTIFIER
+                             |<TYPE_SPECIFIER> IDENTIFIER ASSIGN <EXPRESSION>
 
 
 <EXPRESSION> ::= <LOGICAL_OR>

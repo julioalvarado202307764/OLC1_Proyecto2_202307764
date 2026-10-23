@@ -8,6 +8,7 @@ interface ToolbarProps {
     onOpen: (archivo: File) => void;
     onSave: () => void;
     onAnalyze: () => void;
+    onExecute: () => void;
     onSaveAs: () => void;
     analizando: boolean;
 }
@@ -19,6 +20,7 @@ export function Toolbar({
     onSave,
     onSaveAs,
     onAnalyze,
+    onExecute,
     analizando
 }: ToolbarProps) {
     const inputArchivoRef =
@@ -54,7 +56,7 @@ export function Toolbar({
                 <h1>AutoInfra</h1>
 
                 <span>
-                    Analizador de infraestructura
+                    Intérprete de infraestructura
                 </span>
             </div>
 
@@ -109,9 +111,18 @@ export function Toolbar({
                 >
                     {
                         analizando
-                            ? "Analizando..."
+                            ? "Procesando..."
                             : "Analizar"
                     }
+                </button>
+
+                <button
+                    type="button"
+                    className="primary-button execute-button"
+                    onClick={onExecute}
+                    disabled={analizando}
+                >
+                    Ejecutar
                 </button>
             </div>
         </header>

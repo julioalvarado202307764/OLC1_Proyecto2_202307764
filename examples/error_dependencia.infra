@@ -1,0 +1,14 @@
+database postgres { engine = "postgresql"; version = "16"; port = 5432; }
+server backend { cpu = 4; memory = 8; disk = 100; os = "ubuntu"; }
+service api { port = 8080; replicas = 2; dependsOn = [postgres]; }
+
+main {
+    start(backend);
+    start(backend);
+    print(stop(postgres));
+    print(deploy(backend, api));
+    print(api.status);
+    start(postgres);
+    print(deploy(backend, api));
+    print(api.status, api.host == backend);
+}

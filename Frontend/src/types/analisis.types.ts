@@ -1,5 +1,5 @@
 /* =========================================================
-   SOLICITUD A /analizar
+   SOLICITUD A /api/analyze Y /api/execute
    ========================================================= */
 
 export interface SolicitudAnalisis {
@@ -80,13 +80,15 @@ export interface ReporteTokens {
 
 export type TipoErrorReporte =
     | "Léxico"
-    | "Sintáctico";
+    | "Sintáctico"
+    | "Ejecución"
+    | "Infraestructura";
 
 
 export interface FilaReporteError {
     numero: number;
     tipo: TipoErrorReporte;
-    codigo: null;
+    codigo: string | null;
     descripcion: string;
     linea: number;
     columna: number;
@@ -126,15 +128,70 @@ export interface ReporteAST {
    REPORTES
    ========================================================= */
 
+export interface FilaReporteSimbolo {
+    numero: number;
+    identificador: string;
+    categoria: string;
+    tipo: string;
+    ambito: string;
+    valor: string;
+    linea: number;
+    columna: number;
+}
+
+export interface ReporteSimbolos {
+    filas: FilaReporteSimbolo[];
+}
+
+export interface FilaEstadoFinal {
+    recurso: string;
+    tipo: string;
+    estado: string;
+    detalles: string;
+}
+
+export interface ReporteEstadoFinal {
+    filas: FilaEstadoFinal[];
+}
+
+export interface FilaBitacora {
+    numero: number;
+    nivel: "OK" | "FAIL" | "ERROR";
+    mensaje: string;
+    linea: number | null;
+    columna: number | null;
+}
+
+export interface ReporteBitacora {
+    filas: FilaBitacora[];
+}
+
 export interface ResultadoReportes {
     tablaTokens: ReporteTokens;
     errores: ReporteErrores;
     ast: ReporteAST;
+
+    /* Solo cuando el programa fue ejecutado. */
+    tablaSimbolos?: ReporteSimbolos;
+    estadoFinal?: ReporteEstadoFinal;
+    bitacora?: ReporteBitacora;
 }
 
 
 /* =========================================================
-   RESPUESTA EXITOSA DE /analizar
+   EJECUCIÓN
+   ========================================================= */
+
+export interface ResumenEjecucion {
+    exito: boolean;
+    abortada: boolean;
+    consola: string[];
+    salida: string[];
+}
+
+
+/* =========================================================
+   RESPUESTA EXITOSA DE /api/analyze Y /api/execute
    ========================================================= */
 
 export interface RespuestaAnalisis {
@@ -147,6 +204,12 @@ export interface RespuestaAnalisis {
     erroresSintacticos: ErrorSintactico[];
 
     reportes: ResultadoReportes;
+
+    ejecutado: boolean;
+
+    ejecucion: ResumenEjecucion | null;
+
+    mensajeEjecucion: string | null;
 }
 
 

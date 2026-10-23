@@ -10,11 +10,13 @@ import {
 } from "./components/AnalysisStatus";
 
 import type {
+    AccionAnalisis,
     EstadoAnalisis
 } from "./components/AnalysisStatus";
 
 import {
-    analizarCodigo
+    analizarCodigo,
+    ejecutarCodigo
 } from "./services/analisis.service";
 
 import type {
@@ -61,6 +63,13 @@ function App() {
         setMensajeError
     ] = useState<string | null>(
         null
+    );
+
+    const [
+        accion,
+        setAccion
+    ] = useState<AccionAnalisis>(
+        "analizar"
     );
 
     function manejarCambioCodigo(
@@ -163,13 +172,18 @@ function App() {
         );
     }
 
-    async function manejarAnalisis(): Promise<void> {
+    async function procesar(
+        nuevaAccion: AccionAnalisis
+    ): Promise<void> {
+        setAccion(nuevaAccion);
         setEstadoAnalisis("analizando");
         setMensajeError(null);
         setResultado(null);
         try {
             const respuesta =
-                await analizarCodigo(codigo);
+                nuevaAccion === "ejecutar"
+                    ? await ejecutarCodigo(codigo)
+                    : await analizarCodigo(codigo);
 
             setResultado(respuesta);
 
@@ -211,7 +225,10 @@ function App() {
                 onSave={manejarGuardar}
                 onSaveAs={manejarGuardarComo}
                 onAnalyze={() => {
-                    void manejarAnalisis();
+                    void procesar("analizar");
+                }}
+                onExecute={() => {
+                    void procesar("ejecutar");
                 }}
                 analizando={
                     estadoAnalisis ===
@@ -229,6 +246,13 @@ function App() {
                 <AnalysisStatus
                     estado={estadoAnalisis}
                     mensajeError={mensajeError}
+                    accion={accion}
+                    exitoEjecucion={
+                        resultado?.ejecucion?.exito ?? null
+                    }
+                    erroresLexicos={
+                        resultado?.erroresLexicos.length ?? 0
+                    }
                 />
                 <ResultsPanel
                     resultado={resultado}

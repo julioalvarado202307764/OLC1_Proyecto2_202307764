@@ -14,15 +14,14 @@ export function ErrorsTable({
     return (
         <section className="report-section">
             <h3>
-                Errores léxicos y sintácticos
+                Errores léxicos, sintácticos y de ejecución
             </h3>
 
             {
                 errores.length === 0
                     ? (
                         <p className="empty-report">
-                            No se encontraron errores léxicos
-                            ni sintácticos.
+                            No se encontraron errores.
                         </p>
                     )
                     : (

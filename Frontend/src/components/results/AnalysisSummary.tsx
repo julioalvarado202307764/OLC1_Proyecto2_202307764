@@ -26,6 +26,13 @@ export function AnalysisSummary({
     const astDisponible =
         resultado.reportes.ast.svg !== null;
 
+    const cantidadErroresEjecucion =
+        resultado.reportes.errores.filas.filter(
+            (e) =>
+                e.tipo === "Ejecución" ||
+                e.tipo === "Infraestructura"
+        ).length;
+
 
     return (
         <section className="analysis-summary">
@@ -63,6 +70,20 @@ export function AnalysisSummary({
                         {cantidadErroresSintacticos}
                     </strong>
                 </div>
+
+                {
+                    resultado.ejecutado && (
+                        <div className="summary-item">
+                            <span className="summary-label">
+                                Errores de ejecución
+                            </span>
+
+                            <strong>
+                                {cantidadErroresEjecucion}
+                            </strong>
+                        </div>
+                    )
+                }
 
                 <div className="summary-item">
                     <span className="summary-label">
