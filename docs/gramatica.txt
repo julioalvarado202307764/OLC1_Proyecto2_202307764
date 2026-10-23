@@ -1,17 +1,3 @@
-// =====================================================================
-// Gramática de AutoInfra (notación BNF) - OLC1 Proyecto 2
-// Fuente de verdad: Backend/analizador/analizador.jison
-//
-// Notación:  <NO_TERMINAL> ::= producción | producción alternativa
-//            TERMINALES en mayúsculas; epsilon = cadena vacía.
-//            'error' es el símbolo especial de recuperación sintáctica
-//            (puntos de sincronización: ';' y '}').
-//
-// Precedencia, de menor a mayor (todos los binarios asocian a la izquierda):
-//   ||   &&   == !=   < <= > >=   + -   * / %   ! - (unarios)
-//   postfix: llamada, .propiedad, [índice]
-// =====================================================================
-
 Terminales = {
     INT,
     FLOAT,
